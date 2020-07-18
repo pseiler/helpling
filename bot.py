@@ -4,22 +4,34 @@ from discord.ext import commands
 # for configuration parsing
 import configparser
 
+# for exit and envs etc
+import sys
+
 def config_has_option(object, section, option, path):
     if not object.has_option(section, option):
         print("No attribute \"%s\" in \"%s\"" % (option, path))
+        sys.exit(1)
 
 
+### improve this with error handling etc
 myconfig = configparser.ConfigParser()
 myconfig.read('bot.conf')
 if not myconfig.has_section('main'):
     print("No section [\"main\"] in \"%s\"" % 'bot.conf')
+    sys.exit(1)
+
 config_has_option(myconfig, 'main', 'token', 'bot.conf')
 config_has_option(myconfig, 'main', 'category', 'bot.conf')
+config_has_option(myconfig, 'main', 'prefix', 'bot.conf')
 
+
+# set token and category and prefix
 bot_token = myconfig.get('main', 'token')
 bot_category = myconfig.get('main', 'category')
+bot_command_prefix = myconfig.get('main', 'prefix')
 
-bot = commands.Bot(command_prefix='!')
+# set command prefix for bot
+bot = commands.Bot(command_prefix=bot_command_prefix)
 
 @bot.command()
 async def create(ctx,arg):
