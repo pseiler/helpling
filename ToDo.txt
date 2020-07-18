@@ -5,7 +5,7 @@
 * test for every permission neccesarry
 * check if a user is in the guild mentioned in the config file
 * add json or similiar to track the case id/number (starts with one)
-* implement case close command with id/number as first and only argument (!close 14)
+* implement case close command with id/number as first and only argument (!close 14). This removes user from db
 * implement reopen command (!reopen 14) (but supporter needs to be informed that user must added manually
 * implement add command (!add 14 @user) add @user to case
 * implement remove command (!remove 14 @user) removes @user from case
