@@ -1,0 +1,5 @@
+# ToDo list
+* write code that works with basic functionality
+* prevent spamming (only allow one room per user)
+* setup configuration file for guild id, category id and token
+* test for channel category and exit if it's not found
