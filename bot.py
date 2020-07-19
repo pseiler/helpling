@@ -29,11 +29,13 @@ config_has_option(myconfig, 'main', 'token', 'bot.conf')
 config_has_option(myconfig, 'main', 'prefix', 'bot.conf')
 config_has_option(myconfig, 'main', 'guild', 'bot.conf')
 config_has_option(myconfig, 'main', 'category', 'bot.conf')
+config_has_option(myconfig, 'main', 'archive_category', 'bot.conf')
 config_has_option(myconfig, 'main', 'role', 'bot.conf')
 
 # set token and category and prefix
 bot_token = myconfig.get('main', 'token')
 bot_category = myconfig.get('main', 'category')
+bot_archive_category = myconfig.get('main', 'archive_category')
 bot_guild = myconfig.get('main', 'guild')
 bot_command_prefix = myconfig.get('main', 'prefix')
 bot_supporter_role = myconfig.get('main', 'role')
