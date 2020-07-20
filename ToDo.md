@@ -8,3 +8,4 @@
 1. add list command (!list)  to show open cases and the user who opened it.
 1. add support for a specific channel to post a message when a new case was opened
 1. add support to configure the channel prefix (default is *case*)
+1. categorize commands (not sure how to do that yet)
