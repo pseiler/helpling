@@ -90,7 +90,7 @@ async def create(ctx):
     else:
         # only one room should be open at one time
         if str(author_id) in db['users'].keys():
-            await ctx.send('ERROR: You have already opened a case which is not closed. Please ask a supporter')
+            await ctx.send('ERROR: You have already opened a case (#%s) which is not closed. Please ask a supporter.' % str(db['users'][str(author_id)]))
         else:
             role_object = get(guild.roles, name=bot_supporter_role)
             category_object = get(guild.categories, name=bot_category)
