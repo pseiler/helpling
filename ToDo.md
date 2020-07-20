@@ -18,3 +18,4 @@
 1. If a case is already open, add new reacts to an already open case instead of creating a new one (thanks KenDeep)
 1. check for channel id/name and close with argument when in a support case channel (thanks KenDeep)
 1. add a async function to check for supporter role
+1. implement (!hi) command easter egg to check for server\_owner or suppoter or a funny message for unworthy users
