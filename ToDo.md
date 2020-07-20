@@ -13,3 +13,4 @@
 1. handle close command error when no argument is given
 1. check if channel already exists before creating.
 1. add command to show next ticket number (!next)
+1. move channel checks to future check section
