@@ -12,3 +12,4 @@
 * add language support via config file
 * add list command (!list)  to show open cases and the user who opened it.
 * add support for a specific channel to post a message when a new case was opened
+* add support to configure the channel prefix (default is *case*)
