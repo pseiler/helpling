@@ -104,7 +104,8 @@ async def create(ctx):
             }
 
             # create the channel and message to the channel/user
-            await guild.create_text_channel('case'+ str(db['case']), reason='case' + str(case_id) + ' created', category=category_object, overwrites=channel_overwrites)
+            await guild.create_text_channel('case'+ str(db['case']), reason='case' + str(db['case']) + ' created', category=category_object, overwrites=channel_overwrites)
+            await ctx.send('Channel "#%s" created. Please check for the channel in the "%s" category' % ('case' + str(db['case']), bot_category))
 
             # add user to open case list
             db['users'][str(author_id)] = db['case']
@@ -113,7 +114,6 @@ async def create(ctx):
             # write updates to db file
             await write_db(db, 'db.json')
             # send information to user
-            await ctx.send('Channel "#%s" created. Please check for the channel in the "%s" category' % ('case' + str(db['case']), bot_category))
 
 
 @bot.command(brief=bot_supporter_role +' only. Close an open case.')
