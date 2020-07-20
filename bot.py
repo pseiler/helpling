@@ -177,4 +177,15 @@ async def close(ctx,case_id: int):
                     # send success information to user
                     await ctx.send('Case #%s successfully closed.' % str(case_id) )
 
+@bot.command(brief=bot_supporter_role +' only. List all open cases.')
+async def list(ctx):
+    formatted_text = "__All open cases__:"
+#    formatted_text += "\nUser: case#"#.format()
+    for i in db['users'].items():
+        user = bot.get_user(int(i[0]))
+        formatted_text += "\n{key}: #{value}".format(key=user.name, value=i[1])
+   # print(formatted_text)
+
+    await ctx.send(formatted_text)
+
 bot.run(bot_token)
