@@ -9,7 +9,7 @@ import configparser
 # for exit and envs etc
 import sys
 
-# for db
+# for json parsing and writing support. a simple json file is used as a "db" backend.
 import json
 
 def config_has_option(object, section, option, path):
@@ -46,7 +46,7 @@ async def write_db(db, file):
     with open(file, 'w') as f:
         json.dump(db, f, indent=2, sort_keys=True)
 
-#load json at the beginning
+#load json at the beginning. Create new file when missing
 try:
     with open('db.json') as f:
         db = json.load(f)
@@ -179,13 +179,17 @@ async def close(ctx,case_id: int):
 
 @bot.command(brief=bot_supporter_role +' only. List all open cases.')
 async def list(ctx):
-    formatted_text = "__All open cases__:"
-#    formatted_text += "\nUser: case#"#.format()
-    for i in db['users'].items():
-        user = bot.get_user(int(i[0]))
-        formatted_text += "\n{key}: #{value}".format(key=user.name, value=i[1])
-   # print(formatted_text)
-
-    await ctx.send(formatted_text)
+    guild = get(bot.guilds, name=bot_guild)
+    role_object = get(guild.roles, name=bot_supporter_role)
+    # check if user is a member of configured group
+    if not ctx.author in role_object.members:
+        await ctx.send('ERROR: You are not a member of role "%s" or the opener of this case. Sorry' % str(role_object))
+    else:
+        formatted_text = "__All open cases__:"
+        for i in db['users'].items():
+            user = bot.get_user(int(i[0]))
+            formatted_text += "\n{key}: *#*{value}".format(key=user.name, value=i[1])
+        # send the generated message
+        await ctx.send(formatted_text)
 
 bot.run(bot_token)
