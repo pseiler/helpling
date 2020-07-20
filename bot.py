@@ -102,18 +102,27 @@ async def create(ctx):
                 role_object: discord.PermissionOverwrite(read_messages=True, send_messages=True),
                 bot.user: discord.PermissionOverwrite(read_messages=True, manage_permissions=True),
             }
-
-            # create the channel and message to the channel/user
-            await guild.create_text_channel('case'+ str(db['case']), reason='case' + str(db['case']) + ' created', category=category_object, overwrites=channel_overwrites)
-            await ctx.send('Channel "#%s" created. Please check for the channel in the "%s" category' % ('case' + str(db['case']), bot_category))
-
-            # add user to open case list
-            db['users'][str(author_id)] = db['case']
-            # update case number afterwards
-            db['case'] = db['case'] + 1
-            # write updates to db file
-            await write_db(db, 'db.json')
-            # send information to user
+            # check if there is a channel with the name already present.
+            # TODO only loop through category support
+            # or use discord find to check for existence
+            channel_exists = False
+            for channel in guild.text_channels:
+                if 'case'+str(db['case']) == str(channel.name):
+                    channel_exists = True
+                    break
+            if channel_exists == False:
+                # create the channel and message to the channel/user
+                await guild.create_text_channel('case'+ str(db['case']), reason='case' + str(db['case']) + ' created', category=category_object, overwrites=channel_overwrites)
+                await ctx.send('Channel "#%s" created. Please check for the channel in the "%s" category' % ('case' + str(db['case']), bot_category))
+                # add user to open case list
+                db['users'][str(author_id)] = db['case']
+                # update case number afterwards
+                db['case'] = db['case'] + 1
+                # write updates to db file
+                await write_db(db, 'db.json')
+                # send information to user
+            else:
+                await ctx.send('Cannot create channel "#%s". It already exists. Ask a member of "%s" for help' % ('case' + str(db['case']), bot_supporter_role))
 
 
 @bot.command(brief=bot_supporter_role +' only. Close an open case.')
@@ -121,40 +130,51 @@ async def close(ctx,case_id: int):
     # initialize needed objects
     guild = get(bot.guilds, name=bot_guild)
     role_object = get(guild.roles, name=bot_supporter_role)
-    # check if user is a member of configured group
-    if not ctx.author in role_object.members:
-        await ctx.send('ERROR: You are not a member of role "%s" or the opener of this case. Sorry' % str(role_object))
+    # check if there is a channel with the name already present.
+    channel_exists = False
+    # TODO only loop through category support
+    # or use discord find to check for existence
+    for channel in guild.text_channels:
+        if 'case'+str(case_id) == str(channel.name):
+            channel_exists = True
+            break
+    if channel_exists == False:
+        await ctx.send('ERROR: channel "%s" is missing. Create it manually to proceed.' % ('case' + str(case_id)))
     else:
-        # check if there is a open case
-        if case_id not in db['users'].values():
-            await ctx.send('No open case available. Please check your case id')
+        # check if user is a member of configured group
+        if not ctx.author in role_object.members:
+            await ctx.send('ERROR: You are not a member of role "%s" or the opener of this case. Sorry' % str(role_object))
         else:
-            # get the channel fitting to case id mentioned
-            text_channel = get(guild.text_channels, name='case' + str(case_id))
-            category_object = get(guild.categories, id=text_channel.category_id)
-            # check if channel is in the correct directory
-            if str(category_object.name) != bot_category:
-                await ctx.send('Channel is already archived. Manual intervention neccessary (move channel "#%s" into category %s' % ('case' + str(case_id), str(bot_category)))
+            # check if there is a open case
+            if case_id not in db['users'].values():
+                await ctx.send('No open case available. Please check your case id')
             else:
-                # get category object of destiation/archive category by name
-                archive_category_object = get(guild.categories, name=bot_archive_category)
+                # get the channel fitting to case id mentioned
+                text_channel = get(guild.text_channels, name='case' + str(case_id))
+                category_object = get(guild.categories, id=text_channel.category_id)
+                # check if channel is in the correct directory
+                if str(category_object.name) != bot_category:
+                    await ctx.send('Channel is already archived. Manual intervention neccessary (move channel "#%s" into category %s' % ('case' + str(case_id), str(bot_category)))
+                else:
+                    # get category object of destiation/archive category by name
+                    archive_category_object = get(guild.categories, name=bot_archive_category)
 
-                # craft permission overrides. Only mods should able to read/write. And bot needs to have manage permissions
-                channel_overwrites = {
-                    guild.default_role: discord.PermissionOverwrite(read_messages=False),
-                    role_object: discord.PermissionOverwrite(read_messages=True, send_messages=True),
-                    bot.user: discord.PermissionOverwrite(read_messages=True, manage_permissions=True),
-                }
-                # sync permissions first and the overwrite them so supporter group and bot has still access
-                await text_channel.edit(reason='case' + str(case_id) + ' closed', category=archive_category_object, overwrites=channel_overwrites, sync_permissions=True)
+                    # craft permission overrides. Only mods should able to read/write. And bot needs to have manage permissions
+                    channel_overwrites = {
+                        guild.default_role: discord.PermissionOverwrite(read_messages=False),
+                        role_object: discord.PermissionOverwrite(read_messages=True, send_messages=True),
+                        bot.user: discord.PermissionOverwrite(read_messages=True, manage_permissions=True),
+                    }
+                    # sync permissions first and the overwrite them so supporter group and bot has still access
+                    await text_channel.edit(reason='case' + str(case_id) + ' closed', category=archive_category_object, overwrites=channel_overwrites, sync_permissions=True)
 
-                # remove case from db thanks stackoverflow
-                # https://stackoverflow.com/questions/29218750/what-is-the-best-way-to-remove-a-dictionary-item-by-value-in-python
-                db['users'] = {key:val for key, val in db['users'].items() if val != case_id}
+                    # remove case from db thanks stackoverflow
+                    # https://stackoverflow.com/questions/29218750/what-is-the-best-way-to-remove-a-dictionary-item-by-value-in-python
+                    db['users'] = {key:val for key, val in db['users'].items() if val != case_id}
 
-                # write updates to db file
-                await write_db(db, 'db.json')
-                # send success information to user
-                await ctx.send('Case #%s successfully closed.' % str(case_id) )
+                    # write updates to db file
+                    await write_db(db, 'db.json')
+                    # send success information to user
+                    await ctx.send('Case #%s successfully closed.' % str(case_id) )
 
 bot.run(bot_token)
