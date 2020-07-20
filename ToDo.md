@@ -12,3 +12,4 @@
 1. Use guild id instead of name in config to make sure it is mapped to the correct guild
 1. handle close command error when no argument is given
 1. check if channel already exists before creating.
+1. add command to show next ticket number (!next)
