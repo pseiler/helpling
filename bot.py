@@ -110,7 +110,9 @@ async def create(ctx):
                 if 'case'+str(db['case']) == str(channel.name):
                     channel_exists = True
                     break
-            if channel_exists == False:
+            if channel_exists == True:
+                await ctx.send('Cannot create channel "#%s". It already exists. Ask a member of "%s" for help' % ('case' + str(db['case']), bot_supporter_role))
+            else:
                 # create the channel and message to the channel/user
                 await guild.create_text_channel('case'+ str(db['case']), reason='case' + str(db['case']) + ' created', category=category_object, overwrites=channel_overwrites)
                 await ctx.send('Channel "#%s" created. Please check for the channel in the "%s" category' % ('case' + str(db['case']), bot_category))
@@ -121,8 +123,6 @@ async def create(ctx):
                 # write updates to db file
                 await write_db(db, 'db.json')
                 # send information to user
-            else:
-                await ctx.send('Cannot create channel "#%s". It already exists. Ask a member of "%s" for help' % ('case' + str(db['case']), bot_supporter_role))
 
 
 @bot.command(brief=bot_supporter_role +' only. Close an open case.')
