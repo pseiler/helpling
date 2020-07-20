@@ -9,3 +9,4 @@
 1. add support for a specific channel to post a message when a new case was opened
 1. add support to configure the channel prefix (default is *case*)
 1. categorize commands (not sure how to do that yet)
+1. Use guild id instead of name in config to make sure it is mapped to the correct guild
