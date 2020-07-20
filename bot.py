@@ -146,7 +146,7 @@ async def close(ctx,case_id: int):
                     bot.user: discord.PermissionOverwrite(read_messages=True, manage_permissions=True),
                 }
                 # sync permissions first and the overwrite them so supporter group and bot has still access
-                await text_channel.edit(reason='case' + str(case_id) + ' closed', category=archive_category_object, sync_permissions=True)
+                await text_channel.edit(reason='case' + str(case_id) + ' closed', category=archive_category_object, overwrites=channel_overwrites, sync_permissions=True)
 
                 # remove case from db thanks stackoverflow
                 # https://stackoverflow.com/questions/29218750/what-is-the-best-way-to-remove-a-dictionary-item-by-value-in-python
