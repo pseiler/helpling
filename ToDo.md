@@ -14,6 +14,7 @@
 1. check if channel already exists before creating.
 1. add command to show next ticket number (!next)
 1. move channel checks to future check section
-1. add react watch and react on a specific emoji. create a case for it and paste the problematic message into the channel.
-1. Grab also a few packages before and after for better context
-1. If a case is already open, add new reacts to an already open case instead of creating a new one
+1. add react watch and react on a specific emoji. create a case for it and paste the problematic message into the channel. (thanks KenDeep)
+1. Grab also a few message before and after for better context (thanks KenDeep)
+1. If a case is already open, add new reacts to an already open case instead of creating a new one (thanks KenDeep)
+1. check for channel id/name and close with argument when in a support case channel (thanks KenDeep)
