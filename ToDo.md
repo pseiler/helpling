@@ -17,3 +17,4 @@
 1. Grab also a few message before and after for better context (thanks KenDeep)
 1. If a case is already open, add new reacts to an already open case instead of creating a new one (thanks KenDeep)
 1. check for channel id/name and close with argument when in a support case channel (thanks KenDeep)
+1. add a async function to check for supporter role
