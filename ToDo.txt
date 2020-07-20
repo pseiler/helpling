@@ -10,3 +10,4 @@
 * implement add command (!add 14 @user) add @user to case
 * implement remove command (!remove 14 @user) removes @user from case
 * add language support via config file
+* add list command (!list)  to show open cases and the user who opened it.
