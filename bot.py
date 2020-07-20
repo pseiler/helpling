@@ -79,7 +79,7 @@ async def on_ready():
             print('ERROR: Cannot find channel category "%s" to create support channels' % guild_category)
             sys.exit(1)
 
-@bot.command()
+@bot.command(brief='Create/Open a new case')
 async def create(ctx):
     author_id = ctx.author.id
     guild = get(bot.guilds, name=bot_guild)
@@ -116,7 +116,7 @@ async def create(ctx):
             await ctx.send('Channel "#%s" created. Please check for the channel in the "%s" category' % ('case' + str(db['case']), bot_category))
 
 
-@bot.command()
+@bot.command(brief=bot_supporter_role +' only. Close an open case.')
 async def close(ctx,case_id: int):
     # initialize needed objects
     guild = get(bot.guilds, name=bot_guild)
