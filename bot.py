@@ -1,5 +1,6 @@
 import discord
 from discord.ext import commands
+
 from discord.utils import get
 #from discord.utils import find
 
@@ -78,8 +79,24 @@ async def on_ready():
         if not get(op_guild.categories, name=guild_category):
             print('ERROR: Cannot find channel category "%s" to create support channels' % guild_category)
             sys.exit(1)
+# TODO act on a specific reaction
+#async def on_raw_reaction_add(payload)
 
-@bot.command(brief='Create/Open a new case')
+def check_if_user_has_role(ctx):
+#        await ctx.send('ERROR: You are not a member of role "%s" or the opener of this case. Sorry' % str(role_object))
+    #author_id = ctx.author.id
+    guild = get(bot.guilds, name=bot_guild)
+    author_id = ctx.author.id
+    role_object = get(guild.roles, name=bot_supporter_role)
+    if ctx.author in role_object.members:
+        return True
+    else:
+        return False
+
+
+
+#@bot.command(brief='Create/Open a new case')
+@bot.command(description="Create a new support case", brief='Create/open a new support case')
 async def create(ctx):
     author_id = ctx.author.id
     guild = get(bot.guilds, name=bot_guild)
@@ -94,14 +111,6 @@ async def create(ctx):
         else:
             role_object = get(guild.roles, name=bot_supporter_role)
             category_object = get(guild.categories, name=bot_category)
-
-            # set permissions so the requester and the supporter wrote have write access and the bot can manage the channel.
-            channel_overwrites = {
-                guild.default_role: discord.PermissionOverwrite(read_messages=False),
-                ctx.author: discord.PermissionOverwrite(read_messages=True, send_messages=True),
-                role_object: discord.PermissionOverwrite(read_messages=True, send_messages=True),
-                bot.user: discord.PermissionOverwrite(read_messages=True, manage_permissions=True),
-            }
             # check if there is a channel with the name already present.
             # TODO only loop through category support
             # or use discord find to check for existence
@@ -113,6 +122,14 @@ async def create(ctx):
             if channel_exists == True:
                 await ctx.send('Cannot create channel "#%s". It already exists. Ask a member of "%s" for help' % ('case' + str(db['case']), bot_supporter_role))
             else:
+
+                # set permissions so the requester and the supporter wrote have write access and the bot can manage the channel.
+                channel_overwrites = {
+                    guild.default_role: discord.PermissionOverwrite(read_messages=False),
+                    ctx.author: discord.PermissionOverwrite(read_messages=True, send_messages=True),
+                    role_object: discord.PermissionOverwrite(read_messages=True, send_messages=True),
+                    bot.user: discord.PermissionOverwrite(read_messages=True, manage_permissions=True),
+                }
                 # create the channel and message to the channel/user
                 await guild.create_text_channel('case'+ str(db['case']), reason='case' + str(db['case']) + ' created', category=category_object, overwrites=channel_overwrites)
                 await ctx.send('Channel "#%s" created. Please check for the channel in the "%s" category' % ('case' + str(db['case']), bot_category))
@@ -125,7 +142,11 @@ async def create(ctx):
                 # send information to user
 
 
-@bot.command(brief=bot_supporter_role +' only. Close an open case.')
+@bot.command(description="Close a specified case", brief=bot_supporter_role +' only. Close an open case.', usage='<CASE ID>')
+
+# this line works. But I can't send a message. in a check TODO
+#@commands.check(check_if_user_has_role)
+
 async def close(ctx,case_id: int):
     # initialize needed objects
     guild = get(bot.guilds, name=bot_guild)
@@ -176,8 +197,22 @@ async def close(ctx,case_id: int):
                     await write_db(db, 'db.json')
                     # send success information to user
                     await ctx.send('Case #%s successfully closed.' % str(case_id) )
+@close.error
+async def close_error(ctx, error):
+    if isinstance(error, commands.MissingRequiredArgument):
 
-@bot.command(brief=bot_supporter_role +' only. List all open cases.')
+        ## get integer from channel name
+        # TODO check if channel matches criteria via regex first
+#        channel_case_id = int(str(ctx.message.channel).replace('case', ''))
+        #
+#            if channel_case_id not in db['users'].values():
+#        print(my_val)
+        # check if the channel has an open case and use it. If not print this message.
+        message = '```\nNo case number given\n\nUsage:\n' + bot_command_prefix + 'close 42\n```'
+        await ctx.send(message)
+
+
+@bot.command(description=str(bot_supporter_role) +' only: List all open cases.', brief=bot_supporter_role +' only: List all open cases.')
 async def list(ctx):
     guild = get(bot.guilds, name=bot_guild)
     role_object = get(guild.roles, name=bot_supporter_role)
