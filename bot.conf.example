@@ -5,3 +5,6 @@ guild = <GUILD A>
 category = <CHANNELS WILL BE CREATED IN THIS CATEGORY>
 archive_category = <CHANNELS WILL BE MOVE INTO THIS CATEGORY WHEN CASE IS CLOSED>
 role = <ROLE FOR SUPPORTERS>
+timezone = <TIME USED FOR TIMESTAMPS>
+# the reaction emoji to watch for
+emoji = 💾
