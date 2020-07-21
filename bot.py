@@ -1,7 +1,7 @@
 import discord
 from discord.ext import commands
 
-from discord.utils import get
+from discord.utils import get, find as ds_find
 #from discord.utils import find
 
 # for configuration parsing
@@ -12,6 +12,11 @@ import sys
 
 # for json parsing and writing support. a simple json file is used as a "db" backend.
 import json
+
+# used to determine timezone
+from pytz import timezone
+import datetime
+#from tzlocal import get_localzone # $ pip install tzlocal
 
 def config_has_option(object, section, option, path):
     if not object.has_option(section, option):
@@ -32,6 +37,8 @@ config_has_option(myconfig, 'main', 'guild', 'bot.conf')
 config_has_option(myconfig, 'main', 'category', 'bot.conf')
 config_has_option(myconfig, 'main', 'archive_category', 'bot.conf')
 config_has_option(myconfig, 'main', 'role', 'bot.conf')
+config_has_option(myconfig, 'main', 'timezone', 'bot.conf')
+config_has_option(myconfig, 'main', 'emoji', 'bot.conf')
 
 # set token and category and prefix
 bot_token = myconfig.get('main', 'token')
@@ -40,9 +47,16 @@ bot_archive_category = myconfig.get('main', 'archive_category')
 bot_guild = myconfig.get('main', 'guild')
 bot_command_prefix = myconfig.get('main', 'prefix')
 bot_supporter_role = myconfig.get('main', 'role')
+bot_timezone = myconfig.get('main', 'timezone')
+bot_emoji = myconfig.get('main', 'emoji')
+
+# set timezone for
+# TODO check this with try:
+my_timezone = timezone(bot_timezone)
+utc_timezone = timezone('UTC')
 
 
-# define write function for case
+# define write function for cases
 async def write_db(db, file):
     with open(file, 'w') as f:
         json.dump(db, f, indent=2, sort_keys=True)
@@ -63,6 +77,8 @@ bot = commands.Bot(command_prefix=bot_command_prefix)
 @bot.event
 async def on_ready():
     # at first check if guild in config is available
+    print('Login complete')
+    print('Timezone: ' + str(bot_timezone))
     if not get(bot.guilds, name=bot_guild):
         print("ERROR: Cannot find guild \"%s\"" % bot_guild)
         sys.exit(1)
@@ -79,8 +95,61 @@ async def on_ready():
         if not get(op_guild.categories, name=guild_category):
             print('ERROR: Cannot find channel category "%s" to create support channels' % guild_category)
             sys.exit(1)
-# TODO act on a specific reaction
-#async def on_raw_reaction_add(payload)
+
+
+@bot.event
+async def on_raw_reaction_add(payload):
+    emoji = payload.emoji
+    guild = get(bot.guilds, id=payload.guild_id)
+    channel = get(guild.text_channels, id=payload.channel_id)
+    message = await channel.fetch_message(payload.message_id)
+    message_author = message.author
+
+    # add missing timezone information (stupid discord)
+    utc_timestamp = message.created_at.replace(tzinfo=utc_timezone)
+
+    formatted_timestamp = utc_timestamp.strftime("%a, %Y-%m-%d, %H:%M %Z")
+    # this time object is used create the timestamp for the channel message
+    formatted_local_timestamp = utc_timestamp.astimezone(my_timezone).strftime("%a, %Y-%m-%d, %H:%M %Z")
+    if emoji.is_unicode_emoji():
+        # check if its fit the emoji from the configuration
+        if emoji.name == bot_emoji:
+            reporter_id = payload.member.id
+            # get the support channel for a emoji report
+            if str(reporter_id) in (db['users'].keys()):
+    #            case_channel = ds_find(op_guild.text_channels, name='case'+str(db['users'][str(reporter_id)]),)
+                case_channel = ds_find(lambda m: m.name == 'case'+str(db['users'][str(reporter_id)]), guild.text_channels)
+                # craft messeage
+                message = '```\n%s\n```\n%s: %s' % (str(formatted_local_timestamp), str(message_author), message.content)
+                await case_channel.send(message)
+            else:
+                role_object = get(guild.roles, name=bot_supporter_role)
+                category_object = get(guild.categories, name=bot_category)
+                channel_overwrites = {
+                    guild.default_role: discord.PermissionOverwrite(read_messages=False),
+                    payload.member: discord.PermissionOverwrite(read_messages=True, send_messages=True),
+                    role_object: discord.PermissionOverwrite(read_messages=True, send_messages=True),
+                    bot.user: discord.PermissionOverwrite(read_messages=True, manage_permissions=True),
+                }
+                # create the channel and message to the channel/user
+                await guild.create_text_channel('case'+ str(db['case']), reason='case' + str(db['case']) + ' created', category=category_object, overwrites=channel_overwrites)
+                # add user to open case list
+                db['users'][str(reporter_id)] = db['case']
+                # get created object by name
+                case_channel = ds_find(lambda m: m.name == 'case'+str(db['users'][str(reporter_id)]), guild.text_channels)
+                # TODO change channel where this message will be sent
+
+                if payload.member.dm_channel == None:
+                    await payload.member.create_dm()
+
+                await payload.member.dm_channel.send('Channel "#%s" created. Please check for the channel in the "%s" category' % ('case' + str(db['case']), bot_category))
+                message = '```\n%s\n```\n%s: %s' % (str(formatted_local_timestamp), str(message_author), message.content)
+                await case_channel.send(message)
+                # update case number afterwards
+                db['case'] = db['case'] + 1
+                # write updates to db file
+                await write_db(db, 'db.json')
+                # send information to user
 
 def check_if_user_has_role(ctx):
 #        await ctx.send('ERROR: You are not a member of role "%s" or the opener of this case. Sorry' % str(role_object))
@@ -115,6 +184,7 @@ async def create(ctx):
             # TODO only loop through category support
             # or use discord find to check for existence
             channel_exists = False
+
             for channel in guild.text_channels:
                 if 'case'+str(db['case']) == str(channel.name):
                     channel_exists = True
