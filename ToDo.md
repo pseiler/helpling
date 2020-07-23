@@ -1,7 +1,7 @@
 # ToDo list
 1. test for every permission neccesarry
 1. add support for closing the case by the requester
-1. implement reopen command (!reopen 14) (but supporter needs to be informed that user must be added manually
+1. implement reopen command (!reopen 14 @user)
 1. implement add command (!add 14 @user) add @user to case
 1. implement remove command (!remove 14 @user) removes @user from case
 1. add language support via config file
