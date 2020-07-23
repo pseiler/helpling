@@ -9,7 +9,6 @@
 1. add support to configure the channel prefix (default is *case*)
 1. categorize commands (not sure how to do that yet)
 1. Use guild id instead of name in config to make sure it is mapped to the correct guild
-1. check if channel already exists before creating.
 1. add command to show next ticket number (!next)
 1. move channel checks to future check section
 1. Grab also a few message before and after for better context (thanks KenDeep)
