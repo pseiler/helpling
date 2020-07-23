@@ -73,6 +73,12 @@ async def write_db(db, file):
     with open(file, 'w') as f:
         json.dump(db, f, indent=2, sort_keys=True)
 
+async def update_channel(channel, id, new_category, overwrites):
+    await channel.edit(reason='case' + str(id) + ' closed', category=new_category, overwrites=overwrites, sync_permissions=True)
+
+async def remove_key_by_val(dict, id):
+    return {key:val for key, val in dict.items() if val != id}
+
 #load json at the beginning. Create new file when missing
 try:
     with open('db.json') as f:
@@ -244,7 +250,7 @@ async def close(ctx,case_id: int):
     else:
         # check if user is a member of configured group
         if not ctx.author in role_object.members:
-            await ctx.send('ERROR: You are not a member of role "%s" or the opener of this case. Sorry' % str(role_object))
+            await ctx.send('ERROR: You are not a member of role "%s". Sorry' % str(role_object))
         else:
             # check if there is a open case
             if case_id not in db['users'].values():
@@ -267,11 +273,11 @@ async def close(ctx,case_id: int):
                         bot.user: discord.PermissionOverwrite(read_messages=True, manage_permissions=True),
                     }
                     # sync permissions first and the overwrite them so supporter group and bot has still access
-                    await text_channel.edit(reason='case' + str(case_id) + ' closed', category=archive_category_object, overwrites=channel_overwrites, sync_permissions=True)
+                    await update_channel(text_channel, case_id, archive_category_object, channel_overwrites)
 
-                    # remove case from db thanks stackoverflow
+                    # remove a user determined by case id. thanks stackoverflow
                     # https://stackoverflow.com/questions/29218750/what-is-the-best-way-to-remove-a-dictionary-item-by-value-in-python
-                    db['users'] = {key:val for key, val in db['users'].items() if val != case_id}
+                    db['users'] = await remove_key_by_val(db['users'], case_id)
 
                     # write updates to db file
                     await write_db(db, 'db.json')
@@ -280,16 +286,38 @@ async def close(ctx,case_id: int):
 @close.error
 async def close_error(ctx, error):
     if isinstance(error, commands.MissingRequiredArgument):
+        # set variables as usual
+        guild = get(bot.guilds, name=bot_guild)
+        role_object = get(guild.roles, name=bot_supporter_role)
 
-        ## get integer from channel name
-        # TODO check if channel matches criteria via regex first
-#        channel_case_id = int(str(ctx.message.channel).replace('case', ''))
-        #
-#            if channel_case_id not in db['users'].values():
-#        print(my_val)
-        # check if the channel has an open case and use it. If not print this message.
-        message = '```\nNo case number given\n\nUsage:\n' + bot_command_prefix + 'close 42\n```'
-        await ctx.send(message)
+        # let channels be closed without id when in a case channel
+        if "case" in ctx.message.channel.name:
+
+            # set variables as usual
+            guild = get(bot.guilds, name=bot_guild)
+            role_object = get(guild.roles, name=bot_supporter_role)
+            case_id = int(str(ctx.message.channel).replace('case', ''))
+            archive_category_object = get(guild.categories, name=bot_archive_category)
+
+            channel_overwrites = {
+                guild.default_role: discord.PermissionOverwrite(read_messages=False),
+                role_object: discord.PermissionOverwrite(read_messages=True, send_messages=True),
+                bot.user: discord.PermissionOverwrite(read_messages=True, manage_permissions=True),
+            }
+            # sync permissions first and the overwrite them so supporter group and bot has still access
+            await update_channel(ctx.message.channel, case_id, archive_category_object, channel_overwrites)
+
+            # remove a user determined by case id. thanks stackoverflow
+            # https://stackoverflow.com/questions/29218750/what-is-the-best-way-to-remove-a-dictionary-item-by-value-in-python
+            db['users'] = await remove_key_by_val(db['users'], case_id)
+
+            # write updates to db file
+            await write_db(db, 'db.json')
+            # send success information to user
+            await ctx.send('Case #%s successfully closed.' % str(case_id) )
+        else:
+            message = '```\nNo case number given\n\nUsage:\n' + bot_command_prefix + 'close <ID>\n```'
+            await ctx.send(message)
 
 
 @bot.command(description=str(bot_supporter_role) +' only: List all open cases.', brief=bot_supporter_role +' only: List all open cases.')
