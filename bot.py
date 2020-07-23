@@ -58,8 +58,8 @@ utc_timezone = timezone('UTC')
 #################
 ### functions ###
 #################
-async def channel_exists(id, channel_list):
-    if ds_find(lambda m: m.name == 'case'+str(id), channel_list) != None:
+async def channel_exists(name, channel_list):
+    if ds_find(lambda m: m.name == str(name), channel_list) != None:
         return True
     else:
         return False
@@ -145,7 +145,7 @@ async def on_raw_reaction_add(payload):
                 else:
                     case_channel = ds_find(lambda m: m.name == 'case'+str(db['users'][str(reporter_id)]), guild.text_channels)
                     # craft messeage
-                    message = '```\n%s\n```\n%s: %s' % (str(formatted_local_timestamp), str(message_author), message.content)
+                    message = '```\n%s\n```\n*Message link*: %s\n\n**%s**: %s' % (str(formatted_local_timestamp), message.jump_url, str(message_author), message.content)
                     await case_channel.send(message)
             else:
                 role_object = get(guild.roles, name=bot_supporter_role)
@@ -245,7 +245,7 @@ async def close(ctx,case_id: int):
     # TODO check if a channel is in the right category
 
     # check if channel exists
-    if not await channel_exists(case_id, guild.text_channels):
+    if not await channel_exists('case' + str(case_id), guild.text_channels):
         await ctx.send('ERROR: channel "%s" is missing. Create it manually to proceed.' % ('case' + str(case_id)))
     else:
         # check if user is a member of configured group
