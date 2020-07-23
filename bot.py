@@ -55,6 +55,18 @@ bot_emoji = myconfig.get('main', 'emoji')
 my_timezone = timezone(bot_timezone)
 utc_timezone = timezone('UTC')
 
+#################
+### functions ###
+#################
+async def channel_exists(id, channel_list):
+    if ds_find(lambda m: m.name == 'case'+str(id), channel_list) != None:
+        return True
+    else:
+        return False
+
+async def create_dm(member):
+    if member.dm_channel == None:
+        await member.create_dm()
 
 # define write function for cases
 async def write_db(db, file):
@@ -109,19 +121,26 @@ async def on_raw_reaction_add(payload):
     utc_timestamp = message.created_at.replace(tzinfo=utc_timezone)
 
     formatted_timestamp = utc_timestamp.strftime("%a, %Y-%m-%d, %H:%M %Z")
-    # this time object is used create the timestamp for the channel message
+    # this time object is used to create the timestamp for the channel message
     formatted_local_timestamp = utc_timestamp.astimezone(my_timezone).strftime("%a, %Y-%m-%d, %H:%M %Z")
+
+    # check if emoji is a unicode emoji
     if emoji.is_unicode_emoji():
         # check if its fit the emoji from the configuration
         if emoji.name == bot_emoji:
             reporter_id = payload.member.id
             # get the support channel for a emoji report
             if str(reporter_id) in (db['users'].keys()):
-    #            case_channel = ds_find(op_guild.text_channels, name='case'+str(db['users'][str(reporter_id)]),)
-                case_channel = ds_find(lambda m: m.name == 'case'+str(db['users'][str(reporter_id)]), guild.text_channels)
-                # craft messeage
-                message = '```\n%s\n```\n%s: %s' % (str(formatted_local_timestamp), str(message_author), message.content)
-                await case_channel.send(message)
+                if not await channel_exists('case'+str(db['users'][str(reporter_id)]), guild.text_channels):
+                    # make sure direct message channel is create before messaging to it
+                    await create_dm(payload.member)
+                    # send emoji responses as a direct messsage
+                    await payload.member.dm_channel.send('Channel "#%s" missing. Please ask a "%s" for help.' % ('case' + str(db['case']),bot_supporter_role))
+                else:
+                    case_channel = ds_find(lambda m: m.name == 'case'+str(db['users'][str(reporter_id)]), guild.text_channels)
+                    # craft messeage
+                    message = '```\n%s\n```\n%s: %s' % (str(formatted_local_timestamp), str(message_author), message.content)
+                    await case_channel.send(message)
             else:
                 role_object = get(guild.roles, name=bot_supporter_role)
                 category_object = get(guild.categories, name=bot_category)
@@ -137,14 +156,19 @@ async def on_raw_reaction_add(payload):
                 db['users'][str(reporter_id)] = db['case']
                 # get created object by name
                 case_channel = ds_find(lambda m: m.name == 'case'+str(db['users'][str(reporter_id)]), guild.text_channels)
-                # TODO change channel where this message will be sent
 
-                if payload.member.dm_channel == None:
-                    await payload.member.create_dm()
+                # make sure direct message channel is create before messaging to it
+                await create_dm(payload.member)
 
+                # send emoji responses as a direct messsage
                 await payload.member.dm_channel.send('Channel "#%s" created. Please check for the channel in the "%s" category' % ('case' + str(db['case']), bot_category))
+
+                # craft message response
                 message = '```\n%s\n```\n%s: %s' % (str(formatted_local_timestamp), str(message_author), message.content)
+                
+                # send copied message into case channel
                 await case_channel.send(message)
+
                 # update case number afterwards
                 db['case'] = db['case'] + 1
                 # write updates to db file
@@ -162,9 +186,7 @@ def check_if_user_has_role(ctx):
     else:
         return False
 
-
-
-#@bot.command(brief='Create/Open a new case')
+# create a new case manually
 @bot.command(description="Create a new support case", brief='Create/open a new support case')
 async def create(ctx):
     author_id = ctx.author.id
@@ -180,16 +202,9 @@ async def create(ctx):
         else:
             role_object = get(guild.roles, name=bot_supporter_role)
             category_object = get(guild.categories, name=bot_category)
-            # check if there is a channel with the name already present.
-            # TODO only loop through category support
-            # or use discord find to check for existence
-            channel_exists = False
 
-            for channel in guild.text_channels:
-                if 'case'+str(db['case']) == str(channel.name):
-                    channel_exists = True
-                    break
-            if channel_exists == True:
+            # check if channel already exists
+            if await channel_exists('case'+str(db['case']), guild.text_channels):
                 await ctx.send('Cannot create channel "#%s". It already exists. Ask a member of "%s" for help' % ('case' + str(db['case']), bot_supporter_role))
             else:
 
@@ -221,15 +236,10 @@ async def close(ctx,case_id: int):
     # initialize needed objects
     guild = get(bot.guilds, name=bot_guild)
     role_object = get(guild.roles, name=bot_supporter_role)
-    # check if there is a channel with the name already present.
-    channel_exists = False
-    # TODO only loop through category support
-    # or use discord find to check for existence
-    for channel in guild.text_channels:
-        if 'case'+str(case_id) == str(channel.name):
-            channel_exists = True
-            break
-    if channel_exists == False:
+    # TODO check if a channel is in the right category
+
+    # check if channel exists
+    if not await channel_exists(case_id, guild.text_channels):
         await ctx.send('ERROR: channel "%s" is missing. Create it manually to proceed.' % ('case' + str(case_id)))
     else:
         # check if user is a member of configured group
@@ -290,6 +300,7 @@ async def list(ctx):
     if not ctx.author in role_object.members:
         await ctx.send('ERROR: You are not a member of role "%s" or the opener of this case. Sorry' % str(role_object))
     else:
+        # check if db['users'] is empty. and print that no open case is available
         formatted_text = "__All open cases__:"
         for i in db['users'].items():
             user = bot.get_user(int(i[0]))
