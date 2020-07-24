@@ -2,7 +2,6 @@ import discord
 from discord.ext import commands
 
 from discord.utils import get, find as ds_find
-#from discord.utils import find
 
 # for configuration parsing
 import configparser
@@ -16,7 +15,6 @@ import json
 # used to determine timezone
 from pytz import timezone
 import datetime
-#from tzlocal import get_localzone # $ pip install tzlocal
 
 def config_has_option(object, section, option, path):
     if not object.has_option(section, option):
@@ -118,23 +116,24 @@ async def on_ready():
 @bot.event
 async def on_raw_reaction_add(payload):
     emoji = payload.emoji
-    guild = get(bot.guilds, id=payload.guild_id)
-    channel = get(guild.text_channels, id=payload.channel_id)
-    message = await channel.fetch_message(payload.message_id)
-    message_author = message.author
-
-    # add missing timezone information (stupid discord)
-    utc_timestamp = message.created_at.replace(tzinfo=utc_timezone)
-
-    formatted_timestamp = utc_timestamp.strftime("%a, %Y-%m-%d, %H:%M %Z")
-    # this time object is used to create the timestamp for the channel message
-    formatted_local_timestamp = utc_timestamp.astimezone(my_timezone).strftime("%a, %Y-%m-%d, %H:%M %Z")
 
     # check if emoji is a unicode emoji
     if emoji.is_unicode_emoji():
         # check if its fit the emoji from the configuration
         if emoji.name == bot_emoji:
             reporter_id = payload.member.id
+            guild = get(bot.guilds, id=payload.guild_id)
+            channel = get(guild.text_channels, id=payload.channel_id)
+            message = await channel.fetch_message(payload.message_id)
+            message_author = message.author
+
+            # add missing timezone information (stupid discord)
+            utc_timestamp = message.created_at.replace(tzinfo=utc_timezone)
+
+            formatted_timestamp = utc_timestamp.strftime("%a, %Y-%m-%d, %H:%M %Z")
+            # this time object is used to create the timestamp for the channel message
+            formatted_local_timestamp = utc_timestamp.astimezone(my_timezone).strftime("%a, %Y-%m-%d, %H:%M %Z")
+
             # get the support channel for a emoji report
             if str(reporter_id) in (db['users'].keys()):
                 if not await channel_exists('case'+str(db['users'][str(reporter_id)]), guild.text_channels):
@@ -145,8 +144,8 @@ async def on_raw_reaction_add(payload):
                 else:
                     case_channel = ds_find(lambda m: m.name == 'case'+str(db['users'][str(reporter_id)]), guild.text_channels)
                     # craft messeage
-                    message = '```\n%s\n```\n*Message link*: %s\n\n**%s**: %s' % (str(formatted_local_timestamp), message.jump_url, str(message_author), message.content)
-                    await case_channel.send(message)
+                    message_content = '```\n%s\n```\n*Message link*: %s\n\n**%s**: %s' % (str(formatted_local_timestamp), message.jump_url, str(message_author), message.content)
+                    await case_channel.send(message_content)
             else:
                 role_object = get(guild.roles, name=bot_supporter_role)
                 category_object = get(guild.categories, name=bot_category)
@@ -170,16 +169,23 @@ async def on_raw_reaction_add(payload):
                 await payload.member.dm_channel.send('Channel "#%s" created. Please check for the channel in the "%s" category' % ('case' + str(db['case']), bot_category))
 
                 # craft message response
-                message = '```\n%s\n```\n%s: %s' % (str(formatted_local_timestamp), str(message_author), message.content)
+                message_content = '```\n%s\n```\n%s: %s' % (str(formatted_local_timestamp), str(message_author), message.content)
                 
                 # send copied message into case channel
-                await case_channel.send(message)
+                await case_channel.send(message_content)
 
                 # update case number afterwards
                 db['case'] = db['case'] + 1
                 # write updates to db file
                 await write_db(db, 'db.json')
                 # send information to user
+
+            # delete reaction with this remove after handling report
+            for reaction in message.reactions:
+                if reaction.emoji == bot_emoji:
+                    await reaction.remove(payload.member)
+
+
 
 def check_if_user_has_role(ctx):
 #        await ctx.send('ERROR: You are not a member of role "%s" or the opener of this case. Sorry' % str(role_object))
