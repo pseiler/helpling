@@ -235,7 +235,7 @@ async def create(ctx):
 
             # check if channel already exists
             if await channel_exists('case'+str(db['case']), guild.text_channels):
-                await ctx.send('Cannot create channel "#%s". It already exists. Ask a member of "%s" for help' % ('case' + str(db['case']), bot_supporter_role))
+                await ctx.send('Cannot create channel "#%s". It already exists. Ask a member of role **%s** for help' % ('case' + str(db['case']), bot_supporter_role))
             else:
 
                 # set permissions so the requester and the supporter wrote have write access and the bot can manage the channel.
@@ -247,7 +247,7 @@ async def create(ctx):
                 }
                 # create the channel and message to the channel/user
                 await guild.create_text_channel('case'+ str(db['case']), reason='case' + str(db['case']) + ' created', category=category_object, overwrites=channel_overwrites)
-                await ctx.send('Channel *#%s* created. Please check for the channel in the "%s" category' % ('case' + str(db['case']), bot_category))
+                await ctx.send('Channel *#%s* created. Please check for the channel in the **%s** category' % ('case' + str(db['case']), bot_category))
                 # add user to open case list
                 db['users'][str(author_id)] = db['case']
                 # update case number afterwards
@@ -347,8 +347,9 @@ async def list(ctx):
     guild = get(bot.guilds, name=bot_guild)
     role_object = get(guild.roles, name=bot_supporter_role)
     # check if user is a member of configured group
+    # TODO add support to list own case id if the user is no member of the specified role
     if not ctx.author in role_object.members:
-        await ctx.send('ERROR: You are not a member of role "%s" or the opener of this case. Sorry' % str(role_object))
+        await ctx.send('ERROR: You are not a member of role **%s**. Sorry' % str(role_object))
     else:
         # check if db['users'] is empty. If yes print that there is no open case
         if bool(db['users']):
