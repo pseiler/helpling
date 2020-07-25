@@ -1,7 +1,7 @@
 # Helpling
 A supportive bot for bigger discord servers/guilds.
 
-![helpling log](https://github.com/pseiler/hilfebot/raw/master/helpling.png)
+![helpling log](https://github.com/pseiler/hilfebot/raw/master/img/helpling.png)
 
 This bot helps users reporting abuse, rule breaks and other delicts to a defined role / the moderators.
 Users can create new cases via direct/channel message or reacting to a message in the guild.
