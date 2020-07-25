@@ -1,5 +1,8 @@
-# hilfebot
+# Helpling
 A supportive bot for bigger discord servers/guilds.
+
+![helpling log](https://github.com/pseiler/hilfebot/raw/master/helpling.png)
+
 This bot helps users reporting abuse, rule breaks and other delicts to a defined role / the moderators.
 Users can create new cases via direct/channel message or reacting to a message in the guild.
 This opens a new channel where a configured discord role and the requester can read and write messages.
@@ -34,7 +37,7 @@ pip3 install --users discord.py
 ##### Download the Bot
 Clone the bot sourcecode with from github.
 ```sh
-git clone https://github.com/pseiler/hilfebot.git
+git clone https://github.com/pseiler/helpling.git
 ```
 ### Configuration
 the configuration is quite simple. A few bot configurations are neccessary and additionally some guild preperations need to be done.
@@ -53,7 +56,7 @@ If the bot prints his name and the used timezone into stdout it should work prop
 ### Run as a systemd service
 to run your bot as a systemd service, simply create a service for it. This can by done by this command (replace the *$EDITOR* your with your favorite editor):
 ```sh
-EDITOR=vim sudo -E systemctl edit --force --full supportbot.service
+EDITOR=vim sudo -E systemctl edit --force --full helpling.service
 ```
 Of course the name of the service can be changed too. Then copy the contents of *bot.service.example* into the editor and change the following parameters:
 * **WorkingDirectory** - The path to the directory where your bot is located
@@ -62,3 +65,7 @@ Of course the name of the service can be changed too. Then copy the contents of 
 
 ### Other methods to run the bot permanently
 The bot can also be executed via detached screen session. Also a simple bsd-style init script should work as expected. You can even write your own little management script with ```pgrep``` or similiar.
+
+# Credits
+* [Joanna Ambroziak](https://www.iconfinder.com/Nielubiewatrobki) for the awesome logo
+* KenDeep for a lot of input
