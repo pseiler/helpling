@@ -114,26 +114,35 @@ bot = commands.Bot(command_prefix=bot_command_prefix)
 # add listener on startup
 @bot.event
 async def on_ready():
-    # at first check if guild in config is available
     print('Login complete')
-    print('Timezone: ' + str(bot_timezone))
+    print('Timezone: %s' % str(bot_timezone))
+    # at first check if guild in config is available
     if not get(bot.guilds, name=bot_guild):
-        print("ERROR: Cannot find guild \"%s\"" % bot_guild)
+        print('\nERROR: Cannot find guild/server "%s"' % bot_guild)
         sys.exit(1)
     else:
+        # get guild from configuration file
         guild = get(bot.guilds, name=bot_guild)
 
     # check if role in guild exists
     if not get(guild.roles, name=bot_supporter_role):
-        print("ERROR: Cannot find role for supporters")
+        print('\nERROR: Cannot find role "%s" in guild/server "%s"' % (bot_supporter_role, bot_guild))
         sys.exit(1)
 
     # check if channel categories exist in guild
     for guild_category in [bot_category, bot_archive_category]:
         if not get(guild.categories, name=guild_category):
-            print('ERROR: Cannot find channel category "%s" to create support channels' % guild_category)
+            print('\nERROR: Cannot find channel category "%s" to create support channels' % guild_category)
             sys.exit(1)
 
+    # get member object for guild in configuration file
+    guild_permissions = get(guild.members, name=bot.user.name).guild_permissions
+    # check for for needed permissions
+    for permission in [guild_permissions.manage_channels, guild_permissions.manage_messages]:
+        if permission == False:
+            print('\nERROR: Bot has missing permissions\nPlease add grant the following permissions to the bot:')
+            print('* manage_channels\n* manage_messages')
+            sys.exit(1)
 
 @bot.event
 async def on_raw_reaction_add(payload):
