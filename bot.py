@@ -121,7 +121,7 @@ bot = commands.Bot(command_prefix=bot_command_prefix)
 # add listener on startup
 @bot.event
 async def on_ready():
-    print('Login complete')
+    print('Successfully logged in as: "%s"' % bot.user.name)
     print('Timezone: %s' % str(bot_timezone))
     # at first check if guild in config is available
     if not get(bot.guilds, name=bot_guild):
