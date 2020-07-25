@@ -30,11 +30,11 @@ the channel and moves the channel to an archive channel category
 
 ## Installation
 ### Install requirements
-You need to have python3 installed. On unix-based operation systems this can be done with the corresponding package manager. On Windows [download](https://www.python.org/downloads/windows/) and install python3 manually. After that install the discord.py module via pip or manually. For unix-based operating systems a dedicated user account to run the bot is prefered.
+You need to have python3 installed. On unix-based operation systems this can be done with the corresponding package manager. On Windows [download](https://www.python.org/downloads/windows/) and install python3 manually. After that, install the discord.py and pytz modules via pip or manually. For unix-based operating systems a dedicated user account to run the bot is prefered.
 ##### Install discord.py via pip
 If ```pip3``` isn't available use ```pip``` instead. Make sure ```pip``` uses *python3* not *python2*
 ```sh
-pip3 install --user discord.py
+pip3 install --user discord.py pytz
 ```
 ##### Download the Bot
 Clone the bot sourcecode with from github and change into that directory.
