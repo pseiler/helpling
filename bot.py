@@ -74,6 +74,8 @@ async def write_db(db, file):
 async def update_channel(channel, id, new_category, overwrites):
     await channel.edit(reason='case' + str(id) + ' closed', category=new_category, overwrites=overwrites, sync_permissions=True)
 
+# returns dict without the mentioned value (id). Thanks stackoverflow
+# https://stackoverflow.com/questions/29218750/what-is-the-best-way-to-remove-a-dictionary-item-by-value-in-python
 async def remove_key_by_val(dict, id):
     return {key:val for key, val in dict.items() if val != id}
 
@@ -281,8 +283,6 @@ async def close(ctx,case_id: int):
                     # sync permissions first and the overwrite them so supporter group and bot has still access
                     await update_channel(text_channel, case_id, archive_category_object, channel_overwrites)
 
-                    # remove a user determined by case id. thanks stackoverflow
-                    # https://stackoverflow.com/questions/29218750/what-is-the-best-way-to-remove-a-dictionary-item-by-value-in-python
                     db['users'] = await remove_key_by_val(db['users'], case_id)
 
                     # write updates to db file
