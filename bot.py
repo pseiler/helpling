@@ -257,7 +257,7 @@ async def create(ctx):
                 # send information to user
 
 
-@bot.command(description="Close a specified case", brief=bot_supporter_role +' only. Close an open case.', usage='<CASE ID>')
+@bot.command(description="Close a specified case", brief=bot_supporter_role +' only. Close an open case.', usage='<CASE ID>', help='<ID> can be ommited if you are in a %s channel' % ('case'))
 
 # this line works. But I can't send a message. in a check TODO
 #@commands.check(check_if_user_has_role)
