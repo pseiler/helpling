@@ -5,7 +5,7 @@ After=network-online.target
 [Service]
 Type=simple
 WorkingDirectory=/your/bots/directory
-ExecStart=/usr/bin/python3 /your/bots/directory/file.py
+ExecStart=/usr/bin/python3 /your/bots/directory/bot.py
 User=username
 Restart=on-failure
 
