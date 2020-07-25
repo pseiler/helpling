@@ -34,7 +34,7 @@ You need to have python3 installed. On unix-based operation systems this can be 
 ##### Install discord.py via pip
 If ```pip3``` isn't available use ```pip``` instead. Make sure ```pip``` uses *python3* not *python2*
 ```sh
-pip3 install --users discord.py
+pip3 install --user discord.py
 ```
 ##### Download the Bot
 Clone the bot sourcecode with from github and change into that directory.
