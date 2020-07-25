@@ -37,9 +37,9 @@ If ```pip3``` isn't available use ```pip``` instead. Make sure ```pip``` uses *p
 pip3 install --users discord.py
 ```
 ##### Download the Bot
-Clone the bot sourcecode with from github.
+Clone the bot sourcecode with from github and change into that directory.
 ```sh
-git clone https://github.com/pseiler/helpling.git
+git clone https://github.com/pseiler/helpling.git && cd helpling
 ```
 ### Configuration
 the configuration is quite simple. A few bot configurations are neccessary and additionally some guild preperations need to be done.
