@@ -144,7 +144,7 @@ async def on_raw_reaction_add(payload):
                 else:
                     case_channel = ds_find(lambda m: m.name == 'case'+str(db['users'][str(reporter_id)]), guild.text_channels)
                     # craft messeage
-                    message_content = '```\n%s\n```\n*Message link*: %s\n\n**%s**: %s' % (str(formatted_local_timestamp), message.jump_url, str(message_author), message.content)
+                    message_content = '```\n%s\n```\n*Message link*: %s\n\n>>> **%s**: %s' % (str(formatted_local_timestamp), message.jump_url, str(message_author), message.content)
                     await case_channel.send(message_content)
             else:
                 role_object = get(guild.roles, name=bot_supporter_role)
@@ -169,7 +169,7 @@ async def on_raw_reaction_add(payload):
                 await payload.member.dm_channel.send('Channel "#%s" created. Please check for the channel in the "%s" category' % ('case' + str(db['case']), bot_category))
 
                 # craft message response
-                message_content = '```\n%s\n```\n%s: %s' % (str(formatted_local_timestamp), str(message_author), message.content)
+                message_content = '```\n%s\n```\n*Message link*: %s\n\n>>> **%s**: %s' % (str(formatted_local_timestamp), message.jump_url, str(message_author), message.content)
                 
                 # send copied message into case channel
                 await case_channel.send(message_content)
