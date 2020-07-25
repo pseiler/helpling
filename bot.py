@@ -13,7 +13,7 @@ import sys
 import json
 
 # used to determine timezone
-from pytz import timezone
+from pytz import timezone, exceptions as tz_exceptions
 import datetime
 
 def config_has_option(object, section, option, path):
@@ -48,9 +48,14 @@ bot_supporter_role = myconfig.get('main', 'role')
 bot_timezone = myconfig.get('main', 'timezone')
 bot_emoji = myconfig.get('main', 'emoji')
 
-# set timezone for
-# TODO check user timezone with try:
-my_timezone = timezone(bot_timezone)
+# set local timezone and check for validity
+try:
+    my_timezone = timezone(bot_timezone)
+except tz_exceptions.UnknownTimeZoneError:
+    print('Timezone "%s" not found. Please check your configuration' % bot_timezone)
+    sys.exit(1)
+
+# set also static UTC timezone
 utc_timezone = timezone('UTC')
 
 #################
