@@ -361,4 +361,8 @@ async def list(ctx):
         else:
             await ctx.send('No open cases available')
 
+@bot.command(description='List the number for the next case', brief='List the number for the next case')
+async def next(ctx):
+    await ctx.send('Next case number: *#%s*' % str(db['case']))
+
 bot.run(bot_token)
