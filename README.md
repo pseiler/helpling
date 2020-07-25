@@ -27,7 +27,7 @@ the channel and moves the channel to an archive channel category
 
 ## Installation
 ### Install requirements
-You need to have python3 installed. On unix-based operation systems this can be done with the corresponding package manager. On Windows [download](https://www.python.org/downloads/windows/) and install python3 manually. Install the discord.py module manully. For unix-based operating systems a dedicated user account is prefered.
+You need to have python3 installed. On unix-based operation systems this can be done with the corresponding package manager. On Windows [download](https://www.python.org/downloads/windows/) and install python3 manually. After that install the discord.py module via pip or manually. For unix-based operating systems a dedicated user account to run the bot is prefered.
 ```sh
 pip3 install --users discord.py
 ```
