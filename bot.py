@@ -49,7 +49,7 @@ bot_timezone = myconfig.get('main', 'timezone')
 bot_emoji = myconfig.get('main', 'emoji')
 
 # set timezone for
-# TODO check this with try:
+# TODO check user timezone with try:
 my_timezone = timezone(bot_timezone)
 utc_timezone = timezone('UTC')
 
@@ -76,6 +76,19 @@ async def update_channel(channel, id, new_category, overwrites):
 
 async def remove_key_by_val(dict, id):
     return {key:val for key, val in dict.items() if val != id}
+
+async def check_if_user_has_role(member):
+    guild = get(bot.guilds, name=bot_guild)
+    author_id = member.id
+    role_object = get(guild.roles, name=bot_supporter_role)
+    if member in role_object.members:
+        return True
+    else:
+        return False
+
+###################################
+### here starts the actual code ###
+###################################
 
 #load json at the beginning. Create new file when missing
 try:
@@ -184,17 +197,6 @@ async def on_raw_reaction_add(payload):
             for reaction in message.reactions:
                 if reaction.emoji == bot_emoji:
                     await reaction.remove(payload.member)
-
-
-
-async def check_if_user_has_role(member):
-    guild = get(bot.guilds, name=bot_guild)
-    author_id = member.id
-    role_object = get(guild.roles, name=bot_supporter_role)
-    if member in role_object.members:
-        return True
-    else:
-        return False
 
 # create a new case manually
 @bot.command(description="Create a new support case", brief='Create/open a new support case')
@@ -332,12 +334,15 @@ async def list(ctx):
     if not ctx.author in role_object.members:
         await ctx.send('ERROR: You are not a member of role "%s" or the opener of this case. Sorry' % str(role_object))
     else:
-        # check if db['users'] is empty. and print that no open case is available
-        formatted_text = "__All open cases__:"
-        for i in db['users'].items():
-            user = bot.get_user(int(i[0]))
-            formatted_text += "\n{key}: *#*{value}".format(key=user.name, value=i[1])
-        # send the generated message
-        await ctx.send(formatted_text)
+        # check if db['users'] is empty. If yes print that there is no open case
+        if bool(db['users']):
+            formatted_text = "__All open cases__:\n------"
+            for i in db['users'].items():
+                user = bot.get_user(int(i[0]))
+                formatted_text += "\n{key}#{add}: *#{value}*".format(key=user.name, add=user.discriminator, value=i[1])
+            # send the generated message
+            await ctx.send(formatted_text)
+        else:
+            await ctx.send('No open cases available')
 
 bot.run(bot_token)
