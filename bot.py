@@ -154,74 +154,74 @@ async def on_ready():
 @bot.event
 async def on_raw_reaction_add(payload):
     emoji = payload.emoji
+    guild = get(bot.guilds, id=payload.guild_id)
+    if guild == get(bot.guilds, name=bot_guild):
+        # check if emoji is a unicode emoji
+        if emoji.is_unicode_emoji():
+            # check if its fit the emoji from the configuration
+            if emoji.name == bot_emoji:
+                reporter_id = payload.member.id
+                channel = get(guild.text_channels, id=payload.channel_id)
+                message = await channel.fetch_message(payload.message_id)
+                message_author = message.author
 
-    # check if emoji is a unicode emoji
-    if emoji.is_unicode_emoji():
-        # check if its fit the emoji from the configuration
-        if emoji.name == bot_emoji:
-            reporter_id = payload.member.id
-            guild = get(bot.guilds, id=payload.guild_id)
-            channel = get(guild.text_channels, id=payload.channel_id)
-            message = await channel.fetch_message(payload.message_id)
-            message_author = message.author
+                # add missing timezone information (stupid discord)
+                utc_timestamp = message.created_at.replace(tzinfo=utc_timezone)
 
-            # add missing timezone information (stupid discord)
-            utc_timestamp = message.created_at.replace(tzinfo=utc_timezone)
+                formatted_timestamp = utc_timestamp.strftime("%a, %Y-%m-%d, %H:%M %Z")
+                # this time object is used to create the timestamp for the channel message
+                formatted_local_timestamp = utc_timestamp.astimezone(my_timezone).strftime("%a, %Y-%m-%d, %H:%M %Z")
 
-            formatted_timestamp = utc_timestamp.strftime("%a, %Y-%m-%d, %H:%M %Z")
-            # this time object is used to create the timestamp for the channel message
-            formatted_local_timestamp = utc_timestamp.astimezone(my_timezone).strftime("%a, %Y-%m-%d, %H:%M %Z")
+                # get the support channel for a emoji report
+                if str(reporter_id) in (db['users'].keys()):
+                    if not await channel_exists('case'+str(db['users'][str(reporter_id)]), guild.text_channels):
+                        # make sure direct message channel is create before messaging to it
+                        await create_dm(payload.member)
+                        # send emoji responses as a direct messsage
+                        await payload.member.dm_channel.send('Channel *#%s* missing. Please ask a **%s** for help.' % ('case' + str(db['case']),bot_supporter_role))
+                    else:
+                        case_channel = ds_find(lambda m: m.name == 'case'+str(db['users'][str(reporter_id)]), guild.text_channels)
+                        # craft messeage
+                        message_content = '```\n%s\n```\n*Message link*: %s\n\n>>> **%s**: %s' % (str(formatted_local_timestamp), message.jump_url, str(message_author), message.content)
+                        await case_channel.send(message_content)
+                else:
+                    role_object = get(guild.roles, name=bot_supporter_role)
+                    category_object = get(guild.categories, name=bot_category)
+                    channel_overwrites = {
+                        guild.default_role: discord.PermissionOverwrite(read_messages=False),
+                        payload.member: discord.PermissionOverwrite(read_messages=True, send_messages=True),
+                        role_object: discord.PermissionOverwrite(read_messages=True, send_messages=True),
+                        bot.user: discord.PermissionOverwrite(read_messages=True, manage_permissions=True),
+                    }
+                    # create the channel and message to the channel/user
+                    await guild.create_text_channel('case'+ str(db['case']), reason='case' + str(db['case']) + ' created', category=category_object, overwrites=channel_overwrites)
+                    # add user to open case list
+                    db['users'][str(reporter_id)] = db['case']
+                    # get created object by name
+                    case_channel = ds_find(lambda m: m.name == 'case'+str(db['users'][str(reporter_id)]), guild.text_channels)
 
-            # get the support channel for a emoji report
-            if str(reporter_id) in (db['users'].keys()):
-                if not await channel_exists('case'+str(db['users'][str(reporter_id)]), guild.text_channels):
                     # make sure direct message channel is create before messaging to it
                     await create_dm(payload.member)
+
                     # send emoji responses as a direct messsage
-                    await payload.member.dm_channel.send('Channel *#%s* missing. Please ask a **%s** for help.' % ('case' + str(db['case']),bot_supporter_role))
-                else:
-                    case_channel = ds_find(lambda m: m.name == 'case'+str(db['users'][str(reporter_id)]), guild.text_channels)
-                    # craft messeage
+                    await payload.member.dm_channel.send('Channel *#%s* created. Please check for the channel in the **%s** category' % ('case' + str(db['case']), bot_category))
+
+                    # craft message response
                     message_content = '```\n%s\n```\n*Message link*: %s\n\n>>> **%s**: %s' % (str(formatted_local_timestamp), message.jump_url, str(message_author), message.content)
+
+                    # send copied message into case channel
                     await case_channel.send(message_content)
-            else:
-                role_object = get(guild.roles, name=bot_supporter_role)
-                category_object = get(guild.categories, name=bot_category)
-                channel_overwrites = {
-                    guild.default_role: discord.PermissionOverwrite(read_messages=False),
-                    payload.member: discord.PermissionOverwrite(read_messages=True, send_messages=True),
-                    role_object: discord.PermissionOverwrite(read_messages=True, send_messages=True),
-                    bot.user: discord.PermissionOverwrite(read_messages=True, manage_permissions=True),
-                }
-                # create the channel and message to the channel/user
-                await guild.create_text_channel('case'+ str(db['case']), reason='case' + str(db['case']) + ' created', category=category_object, overwrites=channel_overwrites)
-                # add user to open case list
-                db['users'][str(reporter_id)] = db['case']
-                # get created object by name
-                case_channel = ds_find(lambda m: m.name == 'case'+str(db['users'][str(reporter_id)]), guild.text_channels)
 
-                # make sure direct message channel is create before messaging to it
-                await create_dm(payload.member)
+                    # update case number afterwards
+                    db['case'] = db['case'] + 1
+                    # write updates to db file
+                    await write_db(db, 'db.json')
+                    # send information to user
 
-                # send emoji responses as a direct messsage
-                await payload.member.dm_channel.send('Channel *#%s* created. Please check for the channel in the **%s** category' % ('case' + str(db['case']), bot_category))
-
-                # craft message response
-                message_content = '```\n%s\n```\n*Message link*: %s\n\n>>> **%s**: %s' % (str(formatted_local_timestamp), message.jump_url, str(message_author), message.content)
-                
-                # send copied message into case channel
-                await case_channel.send(message_content)
-
-                # update case number afterwards
-                db['case'] = db['case'] + 1
-                # write updates to db file
-                await write_db(db, 'db.json')
-                # send information to user
-
-            # delete reaction with this remove after handling report
-            for reaction in message.reactions:
-                if reaction.emoji == bot_emoji:
-                    await reaction.remove(payload.member)
+                # delete reaction with this remove after handling report
+                for reaction in message.reactions:
+                    if reaction.emoji == bot_emoji:
+                        await reaction.remove(payload.member)
 
 # create a new case manually
 @bot.command(description="Create a new support case", brief='Create/open a new support case')
@@ -321,33 +321,40 @@ async def close_error(ctx, error):
         if not await check_if_user_has_role(ctx.author):
             await ctx.send('ERROR: You are not a member of role **%s**. Sorry' % str(role_object))
         else:
-            # let channels be closed without id when in a case channel
-            if not "case" in ctx.message.channel.name:
+            # don't test anything anymore if it's a private message.
+            if ctx.message.channel.type == discord.ChannelType.private:
                 message = '```\nERROR: No case number given\n\nUsage:\n%sclose <ID>\n\n<ID> can be ommited if you are in a %s channel\n```' % (bot_command_prefix, 'case')
                 await ctx.send(message)
-            else:
-                    # set variables as usual
-                    guild = get(bot.guilds, name=bot_guild)
-                    role_object = get(guild.roles, name=bot_supporter_role)
-                    case_id = int(str(ctx.message.channel).replace('case', ''))
-                    archive_category_object = get(guild.categories, name=bot_archive_category)
 
-                    channel_overwrites = {
-                        guild.default_role: discord.PermissionOverwrite(read_messages=False),
-                        role_object: discord.PermissionOverwrite(read_messages=True, send_messages=True),
-                        bot.user: discord.PermissionOverwrite(read_messages=True, manage_permissions=True),
-                    }
-                    # sync permissions first and the overwrite them so supporter group and bot has still access
-                    await update_channel(ctx.message.channel, case_id, archive_category_object, channel_overwrites)
+            # only run the following block if the message was sent to text channel in a guild
+            elif ctx.message.channel.type == discord.ChannelType.text:
+                # let channels be closed without id when in a case channel
+                if not "case" in ctx.message.channel.name:
+                    message = '```\nERROR: No case number given\n\nUsage:\n%sclose <ID>\n\n<ID> can be ommited if you are in a %s channel\n```' % (bot_command_prefix, 'case')
+                    await ctx.send(message)
+                else:
+                        # set variables as usual
+                        guild = get(bot.guilds, name=bot_guild)
+                        role_object = get(guild.roles, name=bot_supporter_role)
+                        case_id = int(str(ctx.message.channel).replace('case', ''))
+                        archive_category_object = get(guild.categories, name=bot_archive_category)
 
-                    # remove a user determined by case id. thanks stackoverflow
-                    # https://stackoverflow.com/questions/29218750/what-is-the-best-way-to-remove-a-dictionary-item-by-value-in-python
-                    db['users'] = await remove_key_by_val(db['users'], case_id)
+                        channel_overwrites = {
+                            guild.default_role: discord.PermissionOverwrite(read_messages=False),
+                            role_object: discord.PermissionOverwrite(read_messages=True, send_messages=True),
+                            bot.user: discord.PermissionOverwrite(read_messages=True, manage_permissions=True),
+                        }
+                        # sync permissions first and the overwrite them so supporter group and bot has still access
+                        await update_channel(ctx.message.channel, case_id, archive_category_object, channel_overwrites)
 
-                    # write updates to db file
-                    await write_db(db, 'db.json')
-                    # send success information to user
-                    await ctx.send('Case *#%s* successfully closed.' % str(case_id) )
+                        # remove a user determined by case id. thanks stackoverflow
+                        # https://stackoverflow.com/questions/29218750/what-is-the-best-way-to-remove-a-dictionary-item-by-value-in-python
+                        db['users'] = await remove_key_by_val(db['users'], case_id)
+
+                        # write updates to db file
+                        await write_db(db, 'db.json')
+                        # send success information to user
+                        await ctx.send('Case *#%s* successfully closed.' % str(case_id) )
 
 @bot.command(description=str(bot_supporter_role) +' only: List all open cases.', brief=bot_supporter_role +' only: List all open cases.')
 async def list(ctx):
