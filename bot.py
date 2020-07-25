@@ -189,7 +189,7 @@ async def on_raw_reaction_add(payload):
 
 async def check_if_user_has_role(member):
     guild = get(bot.guilds, name=bot_guild)
-    author_id = ctx.author.id
+    author_id = member.id
     role_object = get(guild.roles, name=bot_supporter_role)
     if member in role_object.members:
         return True
