@@ -6,7 +6,7 @@ A supportive bot for bigger discord servers/guilds.
 This bot helps users reporting abuse, rule breaks and other delicts to a defined role / the moderators.
 Users can create new cases via direct/channel message or reacting to a message in the guild.
 This opens a new channel where a configured discord role and the requester can read and write messages.
-The configured role can close the case via message command. This removes removes the requester from accessing
+The configured role can close the case via message command. This removes the requester from accessing
 the channel and moves the channel to an archive channel category
 
 ## Features
