@@ -52,7 +52,9 @@ bot_emoji = myconfig.get('main', 'emoji')
 try:
     my_timezone = timezone(bot_timezone)
 except tz_exceptions.UnknownTimeZoneError:
-    print('Timezone "%s" not found. Please check your configuration' % bot_timezone)
+    print('ERROR: Timezone "%s" not found. Please check your configuration' % bot_timezone)
+    print('\nA table with TZ database names can be found on wikipedia')
+    print('https://en.wikipedia.org/wiki/List_of_tz_database_time_zones')
     sys.exit(1)
 
 # set also static UTC timezone
@@ -344,7 +346,7 @@ async def list(ctx):
             formatted_text = "__All open cases__:\n------"
             for i in db['users'].items():
                 user = bot.get_user(int(i[0]))
-                formatted_text += "\n{key}#{add}: *#{value}*".format(key=user.name, add=user.discriminator, value=i[1])
+                formatted_text += "\n{key}#{disc}: *#{value}*".format(key=user.name, disc=user.discriminator, value=i[1])
             # send the generated message
             await ctx.send(formatted_text)
         else:
