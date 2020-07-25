@@ -140,7 +140,7 @@ async def on_raw_reaction_add(payload):
                     # make sure direct message channel is create before messaging to it
                     await create_dm(payload.member)
                     # send emoji responses as a direct messsage
-                    await payload.member.dm_channel.send('Channel "#%s" missing. Please ask a "%s" for help.' % ('case' + str(db['case']),bot_supporter_role))
+                    await payload.member.dm_channel.send('Channel *#%s* missing. Please ask a **%s** for help.' % ('case' + str(db['case']),bot_supporter_role))
                 else:
                     case_channel = ds_find(lambda m: m.name == 'case'+str(db['users'][str(reporter_id)]), guild.text_channels)
                     # craft messeage
@@ -166,7 +166,7 @@ async def on_raw_reaction_add(payload):
                 await create_dm(payload.member)
 
                 # send emoji responses as a direct messsage
-                await payload.member.dm_channel.send('Channel "#%s" created. Please check for the channel in the "%s" category' % ('case' + str(db['case']), bot_category))
+                await payload.member.dm_channel.send('Channel *#%s* created. Please check for the channel in the **%s** category' % ('case' + str(db['case']), bot_category))
 
                 # craft message response
                 message_content = '```\n%s\n```\n*Message link*: %s\n\n>>> **%s**: %s' % (str(formatted_local_timestamp), message.jump_url, str(message_author), message.content)
@@ -204,11 +204,11 @@ async def create(ctx):
 
     # not sure if this is really neccessary. But better safe than sorry
     if not get(guild.members, id=author_id):
-        await ctx.send('ERROR: You are no member of server/guild "%s"' % bot_guild)
+        await ctx.send('ERROR: You are no member of server/guild **%s**' % bot_guild)
     else:
         # only one room should be open at one time
         if str(author_id) in db['users'].keys():
-            await ctx.send('ERROR: You have already opened a case (#%s) which is not closed. Please ask a supporter.' % str(db['users'][str(author_id)]))
+            await ctx.send('ERROR: You have already opened a case (*#%s*) which is not closed.\nPlease ask a member of role **%s**.' % (str(db['users'][str(author_id)]), bot_supporter_role))
         else:
             role_object = get(guild.roles, name=bot_supporter_role)
             category_object = get(guild.categories, name=bot_category)
@@ -227,7 +227,7 @@ async def create(ctx):
                 }
                 # create the channel and message to the channel/user
                 await guild.create_text_channel('case'+ str(db['case']), reason='case' + str(db['case']) + ' created', category=category_object, overwrites=channel_overwrites)
-                await ctx.send('Channel "#%s" created. Please check for the channel in the "%s" category' % ('case' + str(db['case']), bot_category))
+                await ctx.send('Channel *#%s* created. Please check for the channel in the "%s" category' % ('case' + str(db['case']), bot_category))
                 # add user to open case list
                 db['users'][str(author_id)] = db['case']
                 # update case number afterwards
@@ -250,22 +250,22 @@ async def close(ctx,case_id: int):
 
     # check if channel exists
     if not await channel_exists('case' + str(case_id), guild.text_channels):
-        await ctx.send('ERROR: channel "%s" is missing. Create it manually to proceed.' % ('case' + str(case_id)))
+        await ctx.send('ERROR: channel *%s* is missing. Create it manually to proceed.' % ('case' + str(case_id)))
     else:
         # check if user is a member of configured group
         if not await check_if_user_has_role(ctx.author):
-            await ctx.send('ERROR: You are not a member of role "%s". Sorry' % str(role_object))
+            await ctx.send('ERROR: You are not a member of role **%s**. Sorry' % str(role_object))
         else:
             # check if there is a open case
             if case_id not in db['users'].values():
-                await ctx.send('No open case available. Please check your case id')
+                await ctx.send('No open case with id *%s* available.\nPlease check your case id' % str(case_id))
             else:
                 # get the channel fitting to case id mentioned
                 text_channel = get(guild.text_channels, name='case' + str(case_id))
                 category_object = get(guild.categories, id=text_channel.category_id)
                 # check if channel is in the correct directory
                 if str(category_object.name) != bot_category:
-                    await ctx.send('Channel is already archived. Manual intervention neccessary (move channel "#%s" into category %s' % ('case' + str(case_id), str(bot_category)))
+                    await ctx.send('ERROR: Channel is already archived. Manual intervention neccessary.\nMove channel *#%s* into category *%s*' % ('case' + str(case_id), str(bot_category)))
                 else:
                     # get category object of destiation/archive category by name
                     archive_category_object = get(guild.categories, name=bot_archive_category)
@@ -286,45 +286,43 @@ async def close(ctx,case_id: int):
                     # write updates to db file
                     await write_db(db, 'db.json')
                     # send success information to user
-                    await ctx.send('Case #%s successfully closed.' % str(case_id) )
+                    await ctx.send('Case *#%s* successfully closed.' % str(case_id) )
 @close.error
 async def close_error(ctx, error):
     if isinstance(error, commands.MissingRequiredArgument):
         # set variables as usual
         guild = get(bot.guilds, name=bot_guild)
         role_object = get(guild.roles, name=bot_supporter_role)
-
-        # let channels be closed without id when in a case channel
-        if not "case" in ctx.message.channel.name:
-            message = '```\nNo case number given\n\nUsage:\n' + bot_command_prefix + 'close <ID>\n```'
-            await ctx.send(message)
+        if not await check_if_user_has_role(ctx.author):
+            await ctx.send('ERROR: You are not a member of role **%s**. Sorry' % str(role_object))
         else:
-            if not await check_if_user_has_role(ctx.author):
-                await ctx.send('ERROR: You are not a member of role "%s". Sorry' % str(role_object))
+            # let channels be closed without id when in a case channel
+            if not "case" in ctx.message.channel.name:
+                message = '```\nERROR: No case number given\n\nUsage:\n%sclose <ID>\n\n<ID> can be ommited if you are in a %s channel\n```' % (bot_command_prefix, 'case')
+                await ctx.send(message)
             else:
-                # set variables as usual
-                guild = get(bot.guilds, name=bot_guild)
-                role_object = get(guild.roles, name=bot_supporter_role)
-                case_id = int(str(ctx.message.channel).replace('case', ''))
-                archive_category_object = get(guild.categories, name=bot_archive_category)
+                    # set variables as usual
+                    guild = get(bot.guilds, name=bot_guild)
+                    role_object = get(guild.roles, name=bot_supporter_role)
+                    case_id = int(str(ctx.message.channel).replace('case', ''))
+                    archive_category_object = get(guild.categories, name=bot_archive_category)
 
-                channel_overwrites = {
-                    guild.default_role: discord.PermissionOverwrite(read_messages=False),
-                    role_object: discord.PermissionOverwrite(read_messages=True, send_messages=True),
-                    bot.user: discord.PermissionOverwrite(read_messages=True, manage_permissions=True),
-                }
-                # sync permissions first and the overwrite them so supporter group and bot has still access
-                await update_channel(ctx.message.channel, case_id, archive_category_object, channel_overwrites)
+                    channel_overwrites = {
+                        guild.default_role: discord.PermissionOverwrite(read_messages=False),
+                        role_object: discord.PermissionOverwrite(read_messages=True, send_messages=True),
+                        bot.user: discord.PermissionOverwrite(read_messages=True, manage_permissions=True),
+                    }
+                    # sync permissions first and the overwrite them so supporter group and bot has still access
+                    await update_channel(ctx.message.channel, case_id, archive_category_object, channel_overwrites)
 
-                # remove a user determined by case id. thanks stackoverflow
-                # https://stackoverflow.com/questions/29218750/what-is-the-best-way-to-remove-a-dictionary-item-by-value-in-python
-                db['users'] = await remove_key_by_val(db['users'], case_id)
+                    # remove a user determined by case id. thanks stackoverflow
+                    # https://stackoverflow.com/questions/29218750/what-is-the-best-way-to-remove-a-dictionary-item-by-value-in-python
+                    db['users'] = await remove_key_by_val(db['users'], case_id)
 
-                # write updates to db file
-                await write_db(db, 'db.json')
-                # send success information to user
-                await ctx.send('Case #%s successfully closed.' % str(case_id) )
-
+                    # write updates to db file
+                    await write_db(db, 'db.json')
+                    # send success information to user
+                    await ctx.send('Case *#%s* successfully closed.' % str(case_id) )
 
 @bot.command(description=str(bot_supporter_role) +' only: List all open cases.', brief=bot_supporter_role +' only: List all open cases.')
 async def list(ctx):
