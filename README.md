@@ -68,4 +68,4 @@ The bot can also be executed via detached screen session. Also a simple bsd-styl
 
 # Credits
 * [Joanna Ambroziak](https://www.iconfinder.com/Nielubiewatrobki) for the awesome logo
-* KenDeep for a lot of input
+* [KenDeep](https://twitter.com/kendeep_fgc) for a lot of input
