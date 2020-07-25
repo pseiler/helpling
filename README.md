@@ -39,7 +39,7 @@ git clone https://github.com/pseiler/hilfebot.git
 ### Configuration
 the configuration is quite simple. A few bot configurations are neccessary and additionally some guild preperations need to be done.
 ##### Discord guild configuration
-Create two new channel category with a name you define. Reasonable names are *support* for active cases and *archive* for closed/archived cases. Add the specified to both channel categories and explicitly add the *Send Messages* permissions to the role. Explicitly disallow everyone to *Send Messages* in both categories
+Create two new channel category with a name you define. Reasonable names are *support* for active cases and *archive* for closed/archived cases. Also create a role to control the bot. Add the created role to both channel categories and explicitly add the *Send Messages* permissions to the role. Explicitly disallow everyone to *Send Messages* in both categories.
 ##### Bot configuration
 An example configuration named *bot.conf.example*. Just copy it and name the new file *bot.conf*. Adjust at least the *token*. Also change the *category* and *archive_category* parameter to the values from your server/guild. Feel free to change every parameter mentioned in the example file. Make sure the file *bot.conf* is in the same directory as *bot.py*
 
