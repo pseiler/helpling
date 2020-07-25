@@ -21,10 +21,17 @@ def config_has_option(object, section, option, path):
         print("No attribute \"%s\" in \"%s\"" % (option, path))
         sys.exit(1)
 
-
-### improve this with error handling etc
+# create configparser object
 myconfig = configparser.ConfigParser()
-myconfig.read('bot.conf')
+
+# try to access bot.conf. Return error if not found
+try:
+    with open('bot.conf') as f:
+        myconfig.read_file(f)
+except FileNotFoundError:
+    print('ERROR: Configuration file "bot.conf" not found.')
+    sys.exit(1)
+
 if not myconfig.has_section('main'):
     print("No section [\"main\"] in \"%s\"" % 'bot.conf')
     sys.exit(1)
