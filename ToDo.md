@@ -12,3 +12,4 @@
 1. Grab also a few message before and after for better context (thanks KenDeep)
 1. implement (!hi) command easter egg to check for server\_owner or suppoter or a funny message for unworthy users
 1. implement check if user is administrator to skip role checks
+1. optionally ping the supporter role in the newly created channel
