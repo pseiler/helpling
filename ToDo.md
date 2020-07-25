@@ -12,6 +12,5 @@
 1. add command to show next ticket number (!next)
 1. move channel checks to future check section
 1. Grab also a few message before and after for better context (thanks KenDeep)
-1. add a async function to check for supporter role
 1. implement (!hi) command easter egg to check for server\_owner or suppoter or a funny message for unworthy users
 1. let role members also report messages via emojis read by db.json case id
