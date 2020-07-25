@@ -1,10 +1,26 @@
 [main]
-token = <BOT TOKEN>
-prefix = <PREFIX for BOT COMMANDS>
-guild = <GUILD A>
-category = <CHANNELS WILL BE CREATED IN THIS CATEGORY>
-archive_category = <CHANNELS WILL BE MOVE INTO THIS CATEGORY WHEN CASE IS CLOSED>
-role = <ROLE FOR SUPPORTERS>
-timezone = <TIME USED FOR TIMESTAMPS>
+# the discord bot token you got after creating an application and the corresponding bot
+token = ABC123def456!"§$
+
+# the command prefix the bot watches for.
+prefix = !
+
+# the guild/server the bot will operate
+guild = My_Guild
+
+# the channel category new cases will be created
+category = support
+
+# the channel category closed channels will be moved to
+archive_category = archive
+
+# the role that can manage cases (closes cases)
+role = supporter
+
+# the timezone for log messages
+# see https://en.wikipedia.org/wiki/List_of_tz_database_time_zones
+timezone = Europe/Berlin
+
+
 # the reaction emoji to watch for
 emoji = 💾
