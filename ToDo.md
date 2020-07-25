@@ -11,3 +11,4 @@
 1. Consider moving channel tests to [check](https://discordpy.readthedocs.io/en/latest/ext/commands/commands.html#checks) section
 1. Grab also a few message before and after for better context (thanks KenDeep)
 1. implement (!hi) command easter egg to check for server\_owner or suppoter or a funny message for unworthy users
+1. implement check if user is administrator to skip role checks
