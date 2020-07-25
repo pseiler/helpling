@@ -67,5 +67,6 @@ Of course the name of the service can be changed too. Then copy the contents of 
 The bot can also be executed via detached screen session. Also a simple bsd-style init script should work as expected. You can even write your own little management script with ```pgrep``` or similiar.
 
 # Credits
+* my girlfriend for the project name
 * [Joanna Ambroziak](https://www.iconfinder.com/Nielubiewatrobki) for the awesome logo
 * [KenDeep](https://twitter.com/kendeep_fgc) for a lot of input
