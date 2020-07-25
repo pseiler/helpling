@@ -60,7 +60,10 @@ to run your bot as a systemd service, simply create a service for it. This can b
 ```sh
 EDITOR=vim sudo -E systemctl edit --force --full helpling.service
 ```
-Of course the name of the service can be changed too. Then copy the contents of *bot.service.example* into the editor and change the following parameters:
+Then copy the contents of *bot.service.example* into the editor.
+Alternatively place the file directly to ```/etc/systemd/system/helpling.service``` and reload systemd with ```systemctl daemon-reload```.
+Of course the name of the service can be changed too.
+Please change the following parameters:
 * **WorkingDirectory** - The path to the directory where your bot is located
 * **ExecStart** - Change the path to the bot.py according to the files location
 * **User** - Change the username to the user which executes the bot
