@@ -6,8 +6,8 @@
 1. add language support via config file
 1. add support for a specific channel to post bot logs such as case creation, closing, reactions, etc
 1. add support to configure the channel prefix (default is *case*)
-1. categorize commands (not sure how to do that yet)
+1. categorize commands using [cogs](https://discordpy.readthedocs.io/en/latest/ext/commands/cogs.html#quick-example)
 1. Consider using the guild id instead of name in config file to make sure it is mapped to the correct guild
-1. move channel checks to check section
+1. Consider moving channel tests to [check](https://discordpy.readthedocs.io/en/latest/ext/commands/commands.html#checks) section
 1. Grab also a few message before and after for better context (thanks KenDeep)
 1. implement (!hi) command easter egg to check for server\_owner or suppoter or a funny message for unworthy users
