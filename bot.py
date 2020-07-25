@@ -187,13 +187,11 @@ async def on_raw_reaction_add(payload):
 
 
 
-def check_if_user_has_role(ctx):
-#        await ctx.send('ERROR: You are not a member of role "%s" or the opener of this case. Sorry' % str(role_object))
-    #author_id = ctx.author.id
+async def check_if_user_has_role(member):
     guild = get(bot.guilds, name=bot_guild)
     author_id = ctx.author.id
     role_object = get(guild.roles, name=bot_supporter_role)
-    if ctx.author in role_object.members:
+    if member in role_object.members:
         return True
     else:
         return False
@@ -255,7 +253,7 @@ async def close(ctx,case_id: int):
         await ctx.send('ERROR: channel "%s" is missing. Create it manually to proceed.' % ('case' + str(case_id)))
     else:
         # check if user is a member of configured group
-        if not ctx.author in role_object.members:
+        if not await check_if_user_has_role(ctx.author):
             await ctx.send('ERROR: You are not a member of role "%s". Sorry' % str(role_object))
         else:
             # check if there is a open case
@@ -297,33 +295,35 @@ async def close_error(ctx, error):
         role_object = get(guild.roles, name=bot_supporter_role)
 
         # let channels be closed without id when in a case channel
-        if "case" in ctx.message.channel.name:
-
-            # set variables as usual
-            guild = get(bot.guilds, name=bot_guild)
-            role_object = get(guild.roles, name=bot_supporter_role)
-            case_id = int(str(ctx.message.channel).replace('case', ''))
-            archive_category_object = get(guild.categories, name=bot_archive_category)
-
-            channel_overwrites = {
-                guild.default_role: discord.PermissionOverwrite(read_messages=False),
-                role_object: discord.PermissionOverwrite(read_messages=True, send_messages=True),
-                bot.user: discord.PermissionOverwrite(read_messages=True, manage_permissions=True),
-            }
-            # sync permissions first and the overwrite them so supporter group and bot has still access
-            await update_channel(ctx.message.channel, case_id, archive_category_object, channel_overwrites)
-
-            # remove a user determined by case id. thanks stackoverflow
-            # https://stackoverflow.com/questions/29218750/what-is-the-best-way-to-remove-a-dictionary-item-by-value-in-python
-            db['users'] = await remove_key_by_val(db['users'], case_id)
-
-            # write updates to db file
-            await write_db(db, 'db.json')
-            # send success information to user
-            await ctx.send('Case #%s successfully closed.' % str(case_id) )
-        else:
+        if not "case" in ctx.message.channel.name:
             message = '```\nNo case number given\n\nUsage:\n' + bot_command_prefix + 'close <ID>\n```'
             await ctx.send(message)
+        else:
+            if not await check_if_user_has_role(ctx.author):
+                await ctx.send('ERROR: You are not a member of role "%s". Sorry' % str(role_object))
+            else:
+                # set variables as usual
+                guild = get(bot.guilds, name=bot_guild)
+                role_object = get(guild.roles, name=bot_supporter_role)
+                case_id = int(str(ctx.message.channel).replace('case', ''))
+                archive_category_object = get(guild.categories, name=bot_archive_category)
+
+                channel_overwrites = {
+                    guild.default_role: discord.PermissionOverwrite(read_messages=False),
+                    role_object: discord.PermissionOverwrite(read_messages=True, send_messages=True),
+                    bot.user: discord.PermissionOverwrite(read_messages=True, manage_permissions=True),
+                }
+                # sync permissions first and the overwrite them so supporter group and bot has still access
+                await update_channel(ctx.message.channel, case_id, archive_category_object, channel_overwrites)
+
+                # remove a user determined by case id. thanks stackoverflow
+                # https://stackoverflow.com/questions/29218750/what-is-the-best-way-to-remove-a-dictionary-item-by-value-in-python
+                db['users'] = await remove_key_by_val(db['users'], case_id)
+
+                # write updates to db file
+                await write_db(db, 'db.json')
+                # send success information to user
+                await ctx.send('Case #%s successfully closed.' % str(case_id) )
 
 
 @bot.command(description=str(bot_supporter_role) +' only: List all open cases.', brief=bot_supporter_role +' only: List all open cases.')
