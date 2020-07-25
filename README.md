@@ -41,7 +41,7 @@ the configuration is quite simple. A few bot configurations are neccessary and a
 ##### Discord guild configuration
 Create two new channel category with a name you define. Reasonable names are *support* for active cases and *archive* for closed/archived cases. Also create a role to control the bot. Add the created role to both channel categories and explicitly add the *Send Messages* permissions to the role. Explicitly disallow everyone to *Send Messages* in both categories.
 ##### Bot configuration
-An example configuration named *bot.conf.example*. Just copy it and name the new file *bot.conf*. Adjust at least the *token*. Also change the *category* and *archive_category* parameter to the values from your server/guild. Feel free to change every parameter mentioned in the example file. Make sure the file *bot.conf* is in the same directory as *bot.py*
+There is an example configuration named *bot.conf.example* in the bot directory. Just copy it and name the new file *bot.conf*. Adjust at least the *token*. Also change the *category* and *archive_category* parameter to the values from your server/guild. Feel free to change every parameter mentioned in the example file. Make sure the file *bot.conf* is in the same directory as *bot.py*
 
 ## Run the bot
 ### Temporary
@@ -55,7 +55,7 @@ to run your bot as a systemd service, simply create a service for it. This can b
 ```sh
 EDITOR=vim sudo -E systemctl edit --force --full supportbot.service
 ```
-Of course the name of the service can be changed. Then copy the contents of *bot.service.example* into the editor and change the following parameters:
+Of course the name of the service can be changed too. Then copy the contents of *bot.service.example* into the editor and change the following parameters:
 * **WorkingDirectory** - The path to the directory where your bot is located
 * **ExecStart** - Change the path to the bot.py according to the files location
 * **User** - Change the username to the user which executes the bot
