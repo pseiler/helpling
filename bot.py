@@ -121,16 +121,16 @@ async def on_ready():
         print("ERROR: Cannot find guild \"%s\"" % bot_guild)
         sys.exit(1)
     else:
-        op_guild = get(bot.guilds, name=bot_guild)
+        guild = get(bot.guilds, name=bot_guild)
 
     # check if role in guild exists
-    if not get(op_guild.roles, name=bot_supporter_role):
+    if not get(guild.roles, name=bot_supporter_role):
         print("ERROR: Cannot find role for supporters")
         sys.exit(1)
 
     # check if channel categories exist in guild
     for guild_category in [bot_category, bot_archive_category]:
-        if not get(op_guild.categories, name=guild_category):
+        if not get(guild.categories, name=guild_category):
             print('ERROR: Cannot find channel category "%s" to create support channels' % guild_category)
             sys.exit(1)
 
