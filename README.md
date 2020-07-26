@@ -1,5 +1,5 @@
 # Helpling
-A supportive bot for bigger discord servers/guilds.
+A supportive bot for larger discord servers/guilds.
 
 ![helpling log](https://github.com/pseiler/hilfebot/raw/master/img/helpling.png)
 
