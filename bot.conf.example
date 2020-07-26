@@ -21,6 +21,8 @@ role = supporter
 # see https://en.wikipedia.org/wiki/List_of_tz_database_time_zones
 timezone = Europe/Berlin
 
-
 # the reaction emoji to watch for
 emoji = 💾
+
+# OPTIONAL: enable role mentioning when new channel is created. (true/false). Defaults to "false"
+enable_mention = false
