@@ -199,12 +199,13 @@ async def on_raw_reaction_add(payload):
                     db['users'][str(reporter_id)] = db['case']
                     # get created object by name
                     case_channel = ds_find(lambda m: m.name == 'case'+str(db['users'][str(reporter_id)]), guild.text_channels)
+                    await case_channel.send('Hey {0}. Please have a look at this new case'.format(role_object.mention))
 
                     # make sure direct message channel is create before messaging to it
                     await create_dm(payload.member)
 
                     # send emoji responses as a direct messsage
-                    await payload.member.dm_channel.send('Channel *#%s* created. Please check for the channel in the **%s** category' % ('case' + str(db['case']), bot_category))
+                    await payload.member.dm_channel.send('Channel *#%s* created. Please check for the channel in the **%s** category on guild **%s**.' % ('case' + str(db['case']), bot_category, guild))
 
                     # craft message response
                     message_content = '```\n%s\n```\n*Message link*: %s\n\n>>> **%s**: %s' % (str(formatted_local_timestamp), message.jump_url, str(message_author), message.content)
@@ -254,6 +255,9 @@ async def create(ctx):
                 }
                 # create the channel and message to the channel/user
                 await guild.create_text_channel('case'+ str(db['case']), reason='case' + str(db['case']) + ' created', category=category_object, overwrites=channel_overwrites)
+
+                case_channel = ds_find(lambda m: m.name == 'case'+str(db['case']), guild.text_channels)
+                await case_channel.send('Hey {0}. Please have a look at this new case'.format(role_object.mention))
                 await ctx.send('Channel *#%s* created. Please check for the channel in the **%s** category' % ('case' + str(db['case']), bot_category))
                 # add user to open case list
                 db['users'][str(author_id)] = db['case']
