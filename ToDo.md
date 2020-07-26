@@ -13,3 +13,4 @@
 1. implement (!hi) command easter egg to check for server\_owner or suppoter or a funny message for unworthy users
 1. implement check if user is administrator to skip role checks
 1. optionally ping the supporter role in the newly created channel
+1. add support for more than one guild (change db layout to add guild before case dict and remove guild from config file)
