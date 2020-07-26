@@ -37,7 +37,7 @@ If ```pip3``` isn't available use ```pip``` instead. Make sure ```pip``` uses *p
 pip3 install --user discord.py pytz
 ```
 ##### Download the Bot
-Clone the bot sourcecode with from github and change into that directory.
+Clone the bot sourcecode from github and change into that directory.
 ```sh
 git clone https://github.com/pseiler/helpling.git && cd helpling
 ```
