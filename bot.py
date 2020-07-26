@@ -40,15 +40,35 @@ if not myconfig.has_section('main'):
 # check for every neccessary parameter
 for parameter in ['token', 'prefix', 'guild', 'category', 'archive_category', 'role', 'timezone', 'emoji']:
     if not config_has_option(myconfig, 'main', parameter, 'bot.conf'):
-        print("No attribute \"%s\" in \"%s\"" % (parameter, 'bot.conf'))
+        print('ERROR: No parameter "%s" in "%s"' % (parameter, 'bot.conf'))
         sys.exit(1)
+
+# set default for enable_mention and overwrite it, when parameter is present. Also check for correct content
+enable_mention = False
+if config_has_option(myconfig, 'main', 'enable_mention', 'bot.conf'):
+    bot_enable_mention = myconfig.get('main', 'enable_mention')
+    if bot_enable_mention == 'true':
+        enable_mention = True
+    elif bot_enable_mention == 'false':
+        enable_mention = False
+    else:
+        print('ERROR: Wrong value "%s" on parameter "enable_mention" in "bot.conf"' % bot_enable_mention)
+        print('Allowed values:  true / false')
+        sys.exit(1)
+
+# chek if length of prefix is only one character
+if len(myconfig.get('main', 'prefix')) != 1:
+    print('ERROR: Only one character as "prefix" is allowed')
+    print('Please change the value of "prefix". Current "%s"' % (myconfig.get('main', 'prefix')))
+    sys.exit(1)
+else:
+    bot_command_prefix = myconfig.get('main', 'prefix')
 
 # set token and category and prefix
 bot_token = myconfig.get('main', 'token')
 bot_category = myconfig.get('main', 'category')
 bot_archive_category = myconfig.get('main', 'archive_category')
 bot_guild = myconfig.get('main', 'guild')
-bot_command_prefix = myconfig.get('main', 'prefix')
 bot_supporter_role = myconfig.get('main', 'role')
 bot_timezone = myconfig.get('main', 'timezone')
 bot_emoji = myconfig.get('main', 'emoji')
@@ -197,7 +217,8 @@ async def on_raw_reaction_add(payload):
                     db['users'][str(reporter_id)] = db['case']
                     # get created object by name
                     case_channel = ds_find(lambda m: m.name == 'case'+str(db['users'][str(reporter_id)]), guild.text_channels)
-                    await case_channel.send('Hey {0}. Please have a look at this new case'.format(role_object.mention))
+                    if enable_mention == True:
+                        await case_channel.send('Hey {0}. Please have a look at this new case'.format(role_object.mention))
 
                     # make sure direct message channel is create before messaging to it
                     await create_dm(payload.member)
@@ -255,7 +276,9 @@ async def create(ctx):
                 await guild.create_text_channel('case'+ str(db['case']), reason='case' + str(db['case']) + ' created', category=category_object, overwrites=channel_overwrites)
 
                 case_channel = ds_find(lambda m: m.name == 'case'+str(db['case']), guild.text_channels)
-                await case_channel.send('Hey {0}. Please have a look at this new case'.format(role_object.mention))
+
+                if enable_mention == True:
+                    await case_channel.send('Hey {0}. Please have a look at this new case'.format(role_object.mention))
                 await ctx.send('Channel *#%s* created. Please check for the channel in the **%s** category' % ('case' + str(db['case']), bot_category))
                 # add user to open case list
                 db['users'][str(author_id)] = db['case']
