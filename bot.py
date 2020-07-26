@@ -17,9 +17,10 @@ from pytz import timezone, exceptions as tz_exceptions
 import datetime
 
 def config_has_option(object, section, option, path):
-    if not object.has_option(section, option):
-        print("No attribute \"%s\" in \"%s\"" % (option, path))
-        sys.exit(1)
+    if object.has_option(section, option):
+        return True
+    else:
+        return False
 
 # create configparser object
 myconfig = configparser.ConfigParser()
@@ -36,14 +37,11 @@ if not myconfig.has_section('main'):
     print("No section [\"main\"] in \"%s\"" % 'bot.conf')
     sys.exit(1)
 
-config_has_option(myconfig, 'main', 'token', 'bot.conf')
-config_has_option(myconfig, 'main', 'prefix', 'bot.conf')
-config_has_option(myconfig, 'main', 'guild', 'bot.conf')
-config_has_option(myconfig, 'main', 'category', 'bot.conf')
-config_has_option(myconfig, 'main', 'archive_category', 'bot.conf')
-config_has_option(myconfig, 'main', 'role', 'bot.conf')
-config_has_option(myconfig, 'main', 'timezone', 'bot.conf')
-config_has_option(myconfig, 'main', 'emoji', 'bot.conf')
+# check for every neccessary parameter
+for parameter in ['token', 'prefix', 'guild', 'category', 'archive_category', 'role', 'timezone', 'emoji']:
+    if not config_has_option(myconfig, 'main', parameter, 'bot.conf'):
+        print("No attribute \"%s\" in \"%s\"" % (parameter, 'bot.conf'))
+        sys.exit(1)
 
 # set token and category and prefix
 bot_token = myconfig.get('main', 'token')
