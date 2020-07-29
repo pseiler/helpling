@@ -139,8 +139,6 @@ bot = commands.Bot(command_prefix=bot_command_prefix)
 # add listener on startup
 @bot.event
 async def on_ready():
-    print('Successfully logged in as: "%s"' % bot.user.name)
-    print('Timezone: %s' % str(bot_timezone))
     # at first check if guild in config is available
     if not get(bot.guilds, name=bot_guild):
         print('\nERROR: Cannot find guild/server "%s"' % bot_guild)
@@ -168,6 +166,10 @@ async def on_ready():
             print('\nERROR: Bot has missing permissions\nPlease add grant the following permissions to the bot:')
             print('* manage_channels\n* manage_messages')
             sys.exit(1)
+
+    # when everything succeeded print info message
+    print('Successfully logged in as: "%s"' % bot.user.name)
+    print('Timezone: %s' % str(bot_timezone))
 
 @bot.event
 async def on_raw_reaction_add(payload):
