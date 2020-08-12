@@ -14,3 +14,4 @@
 1. implement check if user is administrator to skip role checks
 1. add support for more than one guild (change db layout to add guild before case dict and remove guild from config file)
 1. add slow mode for reactions, so a user cannot spam into a channel. Timeout should be something like 10-30 seconds
+1. rework helpling to support multible servers. Only the server owner can use command "!assign <@role>" to create a entry in the database for it
