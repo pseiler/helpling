@@ -15,3 +15,4 @@
 1. rework helpling to support multible servers. Only the server owner can use command "!assign <@role>" to create a entry in the database for it
 1. !list shows all active cases on any servers for users and admins and on server channels only the ones for the server.
 1. !next only works on a server configured for helpling. Private message also disabled
+1. when a user or mod is in multible servers and sends commands via pm, message him with a reaction message to choose which server he wants for responding
