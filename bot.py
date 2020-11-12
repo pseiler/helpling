@@ -90,6 +90,7 @@ utc_timezone = timezone('UTC')
 #################
 ### functions ###
 #################
+
 async def channel_exists(name, channel_list):
     if ds_find(lambda m: m.name == str(name), channel_list) != None:
         return True
@@ -135,8 +136,12 @@ except FileNotFoundError:
     with open('db.json', 'w') as f:
         json.dump(db, f, indent=2, sort_keys=True)
 
+#get bot intents
+intents = discord.Intents.default()
+intents.members = True
+
 # set command prefix for bot
-bot = commands.Bot(command_prefix=bot_command_prefix)
+bot = commands.Bot(command_prefix=bot_command_prefix, intents=intents)
 
 # add listener on startup
 @bot.event
