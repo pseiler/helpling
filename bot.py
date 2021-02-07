@@ -138,6 +138,7 @@ except FileNotFoundError:
 
 #get bot intents
 intents = discord.Intents.default()
+# check for user permissions, roles etc
 intents.members = True
 
 # set command prefix for bot
@@ -168,10 +169,10 @@ async def on_ready():
     # get member object for guild in configuration file
     guild_permissions = get(guild.members, name=bot.user.name).guild_permissions
     # check for for needed permissions
-    for permission in [guild_permissions.manage_channels, guild_permissions.manage_messages]:
+    for permission in [guild_permissions.manage_channels, guild_permissions.manage_messages, guild_permissions.manage_roles]:
         if permission == False:
             print('\nERROR: Bot has missing permissions\nPlease add grant the following permissions to the bot:')
-            print('* manage_channels\n* manage_messages')
+            print('* manage_channels\n* manage_messages\n* manage_roles')
             sys.exit(1)
 
     # when everything succeeded print info message
@@ -218,7 +219,7 @@ async def on_raw_reaction_add(payload):
                         guild.default_role: discord.PermissionOverwrite(read_messages=False),
                         payload.member: discord.PermissionOverwrite(read_messages=True, send_messages=True),
                         role_object: discord.PermissionOverwrite(read_messages=True, send_messages=True),
-                        bot.user: discord.PermissionOverwrite(read_messages=True, manage_permissions=True),
+                        bot.user: discord.PermissionOverwrite(read_messages=True),
                     }
                     # create the channel and message to the channel/user
                     await guild.create_text_channel('case'+ str(db['case']), reason='case' + str(db['case']) + ' created', category=category_object, overwrites=channel_overwrites)
@@ -279,7 +280,7 @@ async def create(ctx):
                     guild.default_role: discord.PermissionOverwrite(read_messages=False),
                     ctx.author: discord.PermissionOverwrite(read_messages=True, send_messages=True),
                     role_object: discord.PermissionOverwrite(read_messages=True, send_messages=True),
-                    bot.user: discord.PermissionOverwrite(read_messages=True, manage_permissions=True),
+                    bot.user: discord.PermissionOverwrite(read_messages=True),
                 }
                 # create the channel and message to the channel/user
                 await guild.create_text_channel('case'+ str(db['case']), reason='case' + str(db['case']) + ' created', category=category_object, overwrites=channel_overwrites)
@@ -335,8 +336,9 @@ async def close(ctx,case_id: int):
                     channel_overwrites = {
                         guild.default_role: discord.PermissionOverwrite(read_messages=False),
                         role_object: discord.PermissionOverwrite(read_messages=True, send_messages=True),
-                        bot.user: discord.PermissionOverwrite(read_messages=True, manage_permissions=True),
+                        bot.user: discord.PermissionOverwrite(read_messages=True),
                     }
+                    print('close called')
                     # sync permissions first and the overwrite them so supporter group and bot has still access
                     await update_channel(text_channel, case_id, archive_category_object, channel_overwrites)
 
@@ -376,7 +378,7 @@ async def close_error(ctx, error):
                         channel_overwrites = {
                             guild.default_role: discord.PermissionOverwrite(read_messages=False),
                             role_object: discord.PermissionOverwrite(read_messages=True, send_messages=True),
-                            bot.user: discord.PermissionOverwrite(read_messages=True, manage_permissions=True),
+                            bot.user: discord.PermissionOverwrite(read_messages=True),
                         }
                         # sync permissions first and the overwrite them so supporter group and bot has still access
                         await update_channel(ctx.message.channel, case_id, archive_category_object, channel_overwrites)
