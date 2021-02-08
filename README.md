@@ -44,7 +44,7 @@ git clone https://github.com/pseiler/helpling.git && cd helpling
 ### Configuration
 the configuration is quite simple. A few bot configurations are neccessary and additionally some guild preperations need to be done.
 ##### Discord guild configuration
-Create two new channel category with a name you define. Reasonable names are *support* for active cases and *archive* for closed/archived cases. Also create a role to control the bot. Add the created role to both channel categories and explicitly add the *Read Text Channels & See Voice Channels* and *Send Messages* permissions to the role. Explicitly disallow everyone to *Read Text Channels & See Voice Channels* and *Send Messages* in both categories.
+Create two new channel categories with names you define. Reasonable names are *support* for active cases and *archive* for closed/archived cases. Also create a role to control the bot. Add the created role to both channel categories and explicitly add the *Read Text Channels & See Voice Channels* and *Send Messages* permissions to the role. Explicitly disallow everyone to *Read Text Channels & See Voice Channels* and *Send Messages* in both categories.
 ##### Bot configuration
 At first you need to create an discord application and the corresponding bot. discord.py itself has a good documentation [for this](https://discordpy.readthedocs.io/en/latest/discord.html#). There you can get the bot token.
 Also make sure that the **Server Members Intent** [is ticked](https://discordpy.readthedocs.io/en/latest/intents.html#privileged-intents).
