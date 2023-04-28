@@ -139,6 +139,7 @@ except FileNotFoundError:
 #get bot intents
 intents = discord.Intents.default()
 # check for user permissions, roles etc
+intents.message_content = True
 intents.members = True
 
 # set command prefix for bot
