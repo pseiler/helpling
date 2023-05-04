@@ -218,8 +218,8 @@ async def on_raw_reaction_add(payload):
                     category_object = get(guild.categories, name=bot_category)
                     channel_overwrites = {
                         guild.default_role: discord.PermissionOverwrite(read_messages=False),
-                        payload.member: discord.PermissionOverwrite(read_messages=True, send_messages=True),
-                        role_object: discord.PermissionOverwrite(read_messages=True, send_messages=True),
+                        payload.member: discord.PermissionOverwrite(read_messages=True),
+                        role_object: discord.PermissionOverwrite(read_messages=True),
                         bot.user: discord.PermissionOverwrite(read_messages=True),
                     }
                     # create the channel and message to the channel/user
@@ -279,12 +279,19 @@ async def create(ctx):
                 # set permissions so the requester and the supporter wrote have write access and the bot can manage the channel.
                 channel_overwrites = {
                     guild.default_role: discord.PermissionOverwrite(read_messages=False),
-                    ctx.author: discord.PermissionOverwrite(read_messages=True, send_messages=True),
-                    role_object: discord.PermissionOverwrite(read_messages=True, send_messages=True),
+                    ctx.author: discord.PermissionOverwrite(read_messages=True),
+                    role_object: discord.PermissionOverwrite(read_messages=True),
                     bot.user: discord.PermissionOverwrite(read_messages=True),
                 }
                 # create the channel and message to the channel/user
-                await guild.create_text_channel('case'+ str(db['case']), reason='case' + str(db['case']) + ' created', category=category_object, overwrites=channel_overwrites)
+                try:
+#                    await guild.create_text_channel('case'+ str(db['case']), reason='case' + str(db['case']) + ' created',
+#                                                    category=category_object)
+                    await guild.create_text_channel('case'+ str(db['case']), reason='case' + str(db['case']) + ' created',
+                                                    category=category_object, overwrites=channel_overwrites)
+                except discord.errors.Forbidden:
+                    print('No permission')
+                    return
 
                 case_channel = ds_find(lambda m: m.name == 'case'+str(db['case']), guild.text_channels)
 
@@ -336,10 +343,9 @@ async def close(ctx,case_id: int):
                     # craft permission overrides. Only mods should able to read/write. And bot needs to have manage permissions
                     channel_overwrites = {
                         guild.default_role: discord.PermissionOverwrite(read_messages=False),
-                        role_object: discord.PermissionOverwrite(read_messages=True, send_messages=True),
+                        role_object: discord.PermissionOverwrite(read_messages=True),
                         bot.user: discord.PermissionOverwrite(read_messages=True),
                     }
-                    print('close called')
                     # sync permissions first and the overwrite them so supporter group and bot has still access
                     await update_channel(text_channel, case_id, archive_category_object, channel_overwrites)
 
@@ -378,7 +384,7 @@ async def close_error(ctx, error):
 
                         channel_overwrites = {
                             guild.default_role: discord.PermissionOverwrite(read_messages=False),
-                            role_object: discord.PermissionOverwrite(read_messages=True, send_messages=True),
+                            role_object: discord.PermissionOverwrite(read_messages=True),
                             bot.user: discord.PermissionOverwrite(read_messages=True),
                         }
                         # sync permissions first and the overwrite them so supporter group and bot has still access
